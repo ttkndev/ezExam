@@ -1,0 +1,44 @@
+<UserControl x:Class="Desktop.Views.PhongThiView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="{Binding KyThiMacDinhText}" FontWeight="Bold" FontSize="14" Foreground="DarkBlue" Margin="0,0,0,10"/>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
+            <TextBlock Text="Sức chứa/phòng:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <TextBox Text="{Binding RoomCapacity, UpdateSourceTrigger=PropertyChanged}" Width="80"/>
+            <TextBlock Text="Chiến lược:" VerticalAlignment="Center" Margin="20,0,8,0"/>
+            <ComboBox ItemsSource="{Binding Strategies}" SelectedItem="{Binding SelectedStrategy}" Width="180"/>
+            <Button Content="Tải thống kê" Command="{Binding LoadSubjectStatsCommand}" Width="100" Margin="12,0,0,0"/>
+            <Button Content="Xếp phòng" Command="{Binding AllocateCommand}" Width="100" Margin="8,0,0,0"/>
+            <TextBlock Text="{Binding TotalRooms, StringFormat=Tổng phòng: {0}}" VerticalAlignment="Center" Margin="16,0,0,0" FontWeight="SemiBold"/>
+        </StackPanel>
+
+        <GroupBox Grid.Row="2" Header="Số lượng theo môn" Margin="0,0,0,10">
+            <DataGrid ItemsSource="{Binding SubjectCounts}" AutoGenerateColumns="False" Height="160" IsReadOnly="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Môn" Binding="{Binding Subject}" Width="*"/>
+                    <DataGridTextColumn Header="Số thí sinh" Binding="{Binding Count}" Width="120"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </GroupBox>
+
+        <DataGrid Grid.Row="3" ItemsSource="{Binding RoomEntries}" AutoGenerateColumns="False" IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Phòng" Binding="{Binding RoomNumber}" Width="80"/>
+                <DataGridTextColumn Header="Môn" Binding="{Binding Subject}" Width="*"/>
+                <DataGridTextColumn Header="Số lượng" Binding="{Binding Count}" Width="100"/>
+                <DataGridTextColumn Header="SBD từ" Binding="{Binding StartSbd}" Width="100"/>
+                <DataGridTextColumn Header="SBD đến" Binding="{Binding EndSbd}" Width="100"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>
