@@ -2,6 +2,7 @@
 using Desktop.Services;
 using Desktop.Helpers;
 using Microsoft.Win32;
+using System;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using System.Linq;
@@ -32,6 +33,7 @@ namespace Desktop.ViewModels
 
         public ICommand AddThiSinhCommand { get; }
         public ICommand EditThiSinhCommand { get; }
+        public ICommand SaveAllThiSinhCommand { get; }
         public ICommand DeleteThiSinhCommand { get; }
         public ICommand DeleteAllThiSinhCommand { get; }
         public ICommand ImportExcelCommand { get; }
@@ -48,6 +50,7 @@ namespace Desktop.ViewModels
 
             AddThiSinhCommand = new RelayCommand(o => AddThiSinh());
             EditThiSinhCommand = new RelayCommand(o => EditThiSinh(), o => SelectedThiSinh != null);
+            SaveAllThiSinhCommand = new RelayCommand(o => SaveAllThiSinh(), o => ThiSinhList != null && ThiSinhList.Any());
             DeleteThiSinhCommand = new RelayCommand(o => DeleteThiSinh(), o => SelectedThiSinh != null);
             DeleteAllThiSinhCommand = new RelayCommand(o => DeleteAllThiSinh());
             ChooseFileCommand = new RelayCommand(o => ChooseFile());
@@ -70,7 +73,6 @@ namespace Desktop.ViewModels
             }
             OnPropertyChanged(nameof(KyThiMacDinhText));
             OnPropertyChanged(nameof(ThiSinhList));
-
             UpdatePairStats();
         }
 
@@ -79,7 +81,7 @@ namespace Desktop.ViewModels
             var kyThi = _kyThiService.GetKyThiMacDinh();
             if (kyThi == null) return;
 
-            var ts = new ThiSinh { HoTen = "Thí sinh mới", KyThiId = kyThi.Id };
+            var ts = new ThiSinh { HoTen = "Thí sinh mới", MonVan = true, MonToan = true, KyThiId = kyThi.Id };
             _thiSinhService.AddThiSinh(ts, kyThi.Id);
             LoadThiSinh();
         }
@@ -91,6 +93,15 @@ namespace Desktop.ViewModels
                 _thiSinhService.UpdateThiSinh(SelectedThiSinh);
                 LoadThiSinh();
             }
+        }
+
+        private void SaveAllThiSinh()
+        {
+            foreach (var ts in ThiSinhList)
+            {
+                _thiSinhService.UpdateThiSinh(ts);
+            }
+            LoadThiSinh();
         }
 
         private void DeleteThiSinh()
@@ -123,8 +134,10 @@ namespace Desktop.ViewModels
             {
                 SelectedFile = dialog.FileName;
                 SheetNames = _excelImporter.GetSheetNames(SelectedFile);
+                SelectedSheet = SheetNames.FirstOrDefault();
                 OnPropertyChanged(nameof(SelectedFile));
                 OnPropertyChanged(nameof(SheetNames));
+                OnPropertyChanged(nameof(SelectedSheet));
             }
         }
 
@@ -137,22 +150,25 @@ namespace Desktop.ViewModels
             }
         }
 
+        private List<string> GetElectiveSubjects(ThiSinh ts) => ts.CacMonThi?.Split(',')
+            .Select(m => m.Trim())
+            .Where(m => !string.IsNullOrWhiteSpace(m) && m != "Ngữ văn" && m != "Toán")
+            .Distinct()
+            .ToList() ?? new List<string>();
+
         private void UpdatePairStats()
         {
             var stats = new Dictionary<(string, string), int>();
 
             foreach (var ts in ThiSinhList)
             {
-                var monList = ts.CacMonThi?.Split(',')
-                                          .Select(m => m.Trim())
-                                          .Where(m => m != "Ngữ văn" && m != "Toán")
-                                          .ToList() ?? new List<string>();
+                var monList = GetElectiveSubjects(ts);
 
                 if (monList.Count == 2)
                 {
                     var a = monList[0];
                     var b = monList[1];
-                    var key = string.Compare(a, b) < 0 ? (a, b) : (b, a);
+                    var key = string.Compare(a, b, StringComparison.Ordinal) < 0 ? (a, b) : (b, a);
 
                     if (!stats.ContainsKey(key)) stats[key] = 0;
                     stats[key]++;
@@ -160,27 +176,65 @@ namespace Desktop.ViewModels
             }
 
             PairStats = new ObservableCollection<PairStat>(
-                stats.Select(kvp => new PairStat { MonA = kvp.Key.Item1, MonB = kvp.Key.Item2, Count = kvp.Value })
+                stats.OrderByDescending(kvp => kvp.Value)
+                    .Select(kvp => new PairStat { MonA = kvp.Key.Item1, MonB = kvp.Key.Item2, Count = kvp.Value })
             );
             OnPropertyChanged(nameof(PairStats));
         }
 
         private void AssignCaThi()
         {
-            foreach (var ts in ThiSinhList)
-            {
-                var monList = ts.CacMonThi?.Split(',')
-                                          .Select(m => m.Trim())
-                                          .Where(m => m != "Ngữ văn" && m != "Toán")
-                                          .ToList() ?? new List<string>();
+            UpdatePairStats();
 
-                if (monList.Count == 2)
+            var subjects = ThiSinhList.SelectMany(GetElectiveSubjects).Distinct().ToList();
+            var partition = subjects.ToDictionary(s => s, _ => false);
+            var pairWeights = PairStats.ToDictionary(p => (p.MonA, p.MonB), p => p.Count);
+
+            var improved = true;
+            while (improved)
+            {
+                improved = false;
+                foreach (var subject in subjects)
                 {
-                    ts.MonCa1 = monList[0];
-                    ts.MonCa2 = monList[1];
+                    var gain = 0;
+                    foreach (var other in subjects.Where(s => s != subject))
+                    {
+                        var key = string.Compare(subject, other, StringComparison.Ordinal) < 0 ? (subject, other) : (other, subject);
+                        if (!pairWeights.TryGetValue(key, out var w)) continue;
+
+                        var currentlySplit = partition[subject] != partition[other];
+                        gain += currentlySplit ? -w : w;
+                    }
+
+                    if (gain > 0)
+                    {
+                        partition[subject] = !partition[subject];
+                        improved = true;
+                    }
                 }
             }
-            OnPropertyChanged(nameof(ThiSinhList));
+
+            foreach (var ts in ThiSinhList)
+            {
+                var electives = GetElectiveSubjects(ts);
+                ts.MonCa1 = "";
+                ts.MonCa2 = "";
+
+                if (electives.Count == 0) continue;
+                if (electives.Count == 1)
+                {
+                    ts.MonCa1 = electives[0];
+                    continue;
+                }
+
+                var ca1 = electives.FirstOrDefault(s => partition.GetValueOrDefault(s, false));
+                var ca2 = electives.FirstOrDefault(s => !partition.GetValueOrDefault(s, false));
+
+                ts.MonCa1 = ca1 ?? electives[0];
+                ts.MonCa2 = ca2 ?? electives.Skip(1).FirstOrDefault() ?? electives[0];
+            }
+
+            SaveAllThiSinh();
         }
     }
 }

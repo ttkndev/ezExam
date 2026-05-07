@@ -1,6 +1,5 @@
 ﻿using Desktop.Helpers;
 using Desktop.Models;
-using Desktop.Models.Desktop.Models;
 using Desktop.Services;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
@@ -27,6 +26,7 @@ namespace Desktop.ViewModels
         public ICommand EditKyThiCommand { get; }
         public ICommand DeleteKyThiCommand { get; }
         public ICommand SetMacDinhCommand { get; }
+        public ICommand SaveKyThiCommand { get; }
 
         public KyThiViewModel()
         {
@@ -37,6 +37,7 @@ namespace Desktop.ViewModels
             EditKyThiCommand = new RelayCommand(o => EditKyThi(), o => SelectedKyThi != null);
             DeleteKyThiCommand = new RelayCommand(o => DeleteKyThi(), o => SelectedKyThi != null);
             SetMacDinhCommand = new RelayCommand(o => SetMacDinh(), o => SelectedKyThi != null);
+            SaveKyThiCommand = new RelayCommand(o => SaveAllKyThi(), o => KyThiList != null && KyThiList.Count > 0);
         }
 
         private void LoadKyThi()
@@ -73,6 +74,15 @@ namespace Desktop.ViewModels
                 _service.DeleteKyThi(SelectedKyThi.Id);
                 LoadKyThi();
             }
+        }
+
+        private void SaveAllKyThi()
+        {
+            foreach (var kyThi in KyThiList)
+            {
+                _service.UpdateKyThi(kyThi);
+            }
+            LoadKyThi();
         }
 
         private void SetMacDinh()

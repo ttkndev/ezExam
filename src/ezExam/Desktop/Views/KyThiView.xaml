@@ -12,25 +12,23 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- CRUD buttons -->
         <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
             <Button Content="Thêm kỳ thi" Command="{Binding AddKyThiCommand}" Width="100"/>
-            <Button Content="Sửa" Command="{Binding EditKyThiCommand}" Width="80" Margin="10,0,0,0"/>
+            <Button Content="Lưu" Command="{Binding SaveKyThiCommand}" Width="80" Margin="10,0,0,0"/>
             <Button Content="Xóa" Command="{Binding DeleteKyThiCommand}" Width="80" Margin="10,0,0,0"/>
             <Button Content="Đặt mặc định" Command="{Binding SetMacDinhCommand}" Width="120" Margin="10,0,0,0"/>
         </StackPanel>
 
-        <!-- DataGrid hiển thị danh sách kỳ thi -->
         <DataGrid Grid.Row="1"
                   ItemsSource="{Binding KyThiList}"
                   SelectedItem="{Binding SelectedKyThi}"
                   AutoGenerateColumns="False"
-                  IsReadOnly="True">
+                  CanUserAddRows="False">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
-                <DataGridTextColumn Header="Tên kỳ thi" Binding="{Binding TenKyThi}" Width="200"/>
-                <DataGridTextColumn Header="Ngày thi" Binding="{Binding NgayThi}" Width="150"/>
-                <DataGridCheckBoxColumn Header="Mặc định" Binding="{Binding MacDinh}" Width="100"/>
+                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Tên kỳ thi" Binding="{Binding TenKyThi, UpdateSourceTrigger=PropertyChanged}" Width="220"/>
+                <DataGridTextColumn Header="Ngày thi" Binding="{Binding NgayThi, UpdateSourceTrigger=PropertyChanged}" Width="150"/>
+                <DataGridCheckBoxColumn Header="Mặc định" Binding="{Binding MacDinh}" Width="100" IsReadOnly="True"/>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>
