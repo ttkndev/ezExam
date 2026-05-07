@@ -1,0 +1,37 @@
+﻿<UserControl x:Class="Desktop.Views.KyThiView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="400" d:DesignWidth="600">
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- CRUD buttons -->
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+            <Button Content="Thêm kỳ thi" Command="{Binding AddKyThiCommand}" Width="100"/>
+            <Button Content="Sửa" Command="{Binding EditKyThiCommand}" Width="80" Margin="10,0,0,0"/>
+            <Button Content="Xóa" Command="{Binding DeleteKyThiCommand}" Width="80" Margin="10,0,0,0"/>
+            <Button Content="Đặt mặc định" Command="{Binding SetMacDinhCommand}" Width="120" Margin="10,0,0,0"/>
+        </StackPanel>
+
+        <!-- DataGrid hiển thị danh sách kỳ thi -->
+        <DataGrid Grid.Row="1"
+                  ItemsSource="{Binding KyThiList}"
+                  SelectedItem="{Binding SelectedKyThi}"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                <DataGridTextColumn Header="Tên kỳ thi" Binding="{Binding TenKyThi}" Width="200"/>
+                <DataGridTextColumn Header="Ngày thi" Binding="{Binding NgayThi}" Width="150"/>
+                <DataGridCheckBoxColumn Header="Mặc định" Binding="{Binding MacDinh}" Width="100"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

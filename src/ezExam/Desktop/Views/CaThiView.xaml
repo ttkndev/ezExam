@@ -1,0 +1,17 @@
+﻿<UserControl x:Class="Desktop.Views.CaThiView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="10">
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+            <Button Content="Thêm ca thi" Command="{Binding AddCaThiCommand}" Style="{StaticResource ToolbarButtonStyle}"/>
+        </StackPanel>
+
+        <DataGrid ItemsSource="{Binding CaThis}" AutoGenerateColumns="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Tên ca" Binding="{Binding TenCa}" Width="150"/>
+                <DataGridTextColumn Header="Thời gian" Binding="{Binding ThoiGian}" Width="150"/>
+                <DataGridTextColumn Header="Môn thi" Binding="{Binding MonThi}" Width="150"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>
