@@ -49,11 +49,17 @@ namespace Desktop.ViewModels
         public ICommand LoadSubjectStatsCommand { get; }
         public ICommand AllocateCommand { get; }
 
-        public PhongThiViewModel()
+        // Constructor mặc định để tương thích UI hiện tại.
+        public PhongThiViewModel() : this(new ThiSinhService(), new KyThiService(), new PhongThiAllocator())
         {
-            _thiSinhService = new ThiSinhService();
-            _kyThiService = new KyThiService();
-            _allocator = new PhongThiAllocator();
+        }
+
+        // Constructor DI: dễ unit test và dễ thay thế service/allocator theo MVVM.
+        public PhongThiViewModel(ThiSinhService thiSinhService, KyThiService kyThiService, PhongThiAllocator allocator)
+        {
+            _thiSinhService = thiSinhService ?? throw new ArgumentNullException(nameof(thiSinhService));
+            _kyThiService = kyThiService ?? throw new ArgumentNullException(nameof(kyThiService));
+            _allocator = allocator ?? throw new ArgumentNullException(nameof(allocator));
 
             LoadSubjectStatsCommand = new RelayCommand(_ => LoadSubjectStats());
             AllocateCommand = new RelayCommand(_ => Allocate(), _ => SubjectCounts.Any() && RoomCapacity > 0);
