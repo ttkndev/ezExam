@@ -8,9 +8,10 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Hiển thị kỳ thi mặc định -->
+        <!-- Kỳ thi -->
         <TextBlock Grid.Row="0"
                    Text="{Binding KyThiMacDinhText}"
                    FontWeight="Bold"
@@ -20,56 +21,47 @@
 
         <!-- Chọn file Excel -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
-            <Button Content="Chọn file Excel"
-                    Command="{Binding ChooseFileCommand}"
-                    Width="150"/>
-            <TextBlock Text="{Binding SelectedFile}"
-                       Margin="10,0,0,0"
-                       VerticalAlignment="Center"/>
+            <Button Content="Chọn file Excel" Command="{Binding ChooseFileCommand}" Width="150"/>
+            <TextBlock Text="{Binding SelectedFile}" Margin="10,0,0,0" VerticalAlignment="Center"/>
         </StackPanel>
 
-        <!-- Chọn sheet -->
+        <!-- Chọn sheet + Import + Xếp ca -->
         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,10">
             <TextBlock Text="Sheet:" VerticalAlignment="Center" Margin="0,0,10,0"/>
-            <ComboBox ItemsSource="{Binding SheetNames}"
-                      SelectedItem="{Binding SelectedSheet}"
-                      Width="200"/>
-            <Button Content="Import"
-                    Command="{Binding ImportExcelCommand}"
-                    Width="100"
-                    Margin="10,0,0,0"/>
+            <ComboBox ItemsSource="{Binding SheetNames}" SelectedItem="{Binding SelectedSheet}" Width="200"/>
+            <Button Content="Import" Command="{Binding ImportExcelCommand}" Width="100" Margin="10,0,0,0"/>
+            <Button Content="Xếp ca thi" Command="{Binding AssignCaThiCommand}" Width="120" Margin="10,0,0,0"/>
         </StackPanel>
 
-        <!-- DataGrid hiển thị danh sách thí sinh -->
+        <!-- Danh sách thí sinh -->
         <DataGrid Grid.Row="3"
                   ItemsSource="{Binding ThiSinhList}"
                   SelectedItem="{Binding SelectedThiSinh}"
                   AutoGenerateColumns="False"
-                  IsReadOnly="True"
-                  ScrollViewer.VerticalScrollBarVisibility="Auto"
-                  ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                  IsReadOnly="True">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="STT" Binding="{Binding STT}" Width="50"/>
                 <DataGridTextColumn Header="SBD" Binding="{Binding SBD}" Width="80"/>
                 <DataGridTextColumn Header="Họ tên" Binding="{Binding HoTen}" Width="150"/>
                 <DataGridTextColumn Header="Ngày sinh" Binding="{Binding NgaySinh}" Width="100"/>
-                <DataGridTextColumn Header="Giới tính" Binding="{Binding GioiTinh}" Width="80"/>
                 <DataGridTextColumn Header="Lớp" Binding="{Binding Lop}" Width="80"/>
-                <DataGridTextColumn Header="Ngoại ngữ" Binding="{Binding NN}" Width="100"/>
-
-                <!-- Các môn thi -->
-                <DataGridCheckBoxColumn Header="Toán" Binding="{Binding MonToan}" Width="60"/>
                 <DataGridCheckBoxColumn Header="Ngữ văn" Binding="{Binding MonVan}" Width="80"/>
-                <DataGridCheckBoxColumn Header="Sử" Binding="{Binding MonSu}" Width="60"/>
-                <DataGridCheckBoxColumn Header="Địa" Binding="{Binding MonDia}" Width="60"/>
-                <DataGridCheckBoxColumn Header="Lý" Binding="{Binding MonLy}" Width="60"/>
-                <DataGridCheckBoxColumn Header="Hóa" Binding="{Binding MonHoa}" Width="60"/>
-                <DataGridCheckBoxColumn Header="Sinh" Binding="{Binding MonSinh}" Width="60"/>
-                <DataGridCheckBoxColumn Header="KTPL" Binding="{Binding MonKTPL}" Width="70"/>
-                <DataGridCheckBoxColumn Header="Tin" Binding="{Binding MonTin}" Width="60"/>
-                <DataGridCheckBoxColumn Header="CNCN" Binding="{Binding MonCNCN}" Width="70"/>
-                <DataGridCheckBoxColumn Header="CNNN" Binding="{Binding MonCNNN}" Width="70"/>
+                <DataGridCheckBoxColumn Header="Toán" Binding="{Binding MonToan}" Width="80"/>
+                <DataGridTextColumn Header="Ca 1" Binding="{Binding MonCa1}" Width="120"/>
+                <DataGridTextColumn Header="Ca 2" Binding="{Binding MonCa2}" Width="120"/>
+                <DataGridTextColumn Header="Các môn thi" Binding="{Binding CacMonThi}" Width="200"/>
             </DataGrid.Columns>
         </DataGrid>
+
+        <!-- Thống kê cặp môn -->
+        <GroupBox Grid.Row="4" Header="Thống kê cặp môn tự chọn" Margin="0,10,0,0">
+            <DataGrid ItemsSource="{Binding PairStats}" AutoGenerateColumns="False" IsReadOnly="True" Height="150">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Môn A" Binding="{Binding MonA}" Width="120"/>
+                    <DataGridTextColumn Header="Môn B" Binding="{Binding MonB}" Width="120"/>
+                    <DataGridTextColumn Header="Số lượng" Binding="{Binding Count}" Width="80"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </GroupBox>
     </Grid>
 </UserControl>

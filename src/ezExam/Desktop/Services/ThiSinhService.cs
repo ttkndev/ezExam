@@ -23,19 +23,13 @@ namespace Desktop.Services
                     GioiTinh TEXT,
                     Lop TEXT,
 
-                    MonToan INTEGER,
                     MonVan INTEGER,
-                    MonSu INTEGER,
-                    MonDia INTEGER,
-                    MonLy INTEGER,
-                    MonHoa INTEGER,
-                    MonSinh INTEGER,
-                    MonKTPL INTEGER,
-                    MonTin INTEGER,
-                    MonCNCN INTEGER,
-                    MonCNNN INTEGER,
+                    MonToan INTEGER,
 
-                    NN TEXT,
+                    CacMonThi TEXT,
+                    MonCa1 TEXT,
+                    MonCa2 TEXT,
+
                     KyThiId INTEGER
                 );
             ";
@@ -64,19 +58,12 @@ namespace Desktop.Services
                     NgaySinh = reader.GetString(4),
                     GioiTinh = reader.GetString(5),
                     Lop = reader.GetString(6),
-                    MonToan = reader.GetInt32(7),
-                    MonVan = reader.GetInt32(8),
-                    MonSu = reader.GetInt32(9),
-                    MonDia = reader.GetInt32(10),
-                    MonLy = reader.GetInt32(11),
-                    MonHoa = reader.GetInt32(12),
-                    MonSinh = reader.GetInt32(13),
-                    MonKTPL = reader.GetInt32(14),
-                    MonTin = reader.GetInt32(15),
-                    MonCNCN = reader.GetInt32(16),
-                    MonCNNN = reader.GetInt32(17),
-                    NN = reader.GetString(18),
-                    KyThiId = reader.GetInt32(19)
+                    MonVan = reader.GetInt32(7) == 1,
+                    MonToan = reader.GetInt32(8) == 1,
+                    CacMonThi = reader.IsDBNull(9) ? "" : reader.GetString(9),
+                    MonCa1 = reader.IsDBNull(10) ? "" : reader.GetString(10),
+                    MonCa2 = reader.IsDBNull(11) ? "" : reader.GetString(11),
+                    KyThiId = reader.GetInt32(12)
                 });
             }
             return list;
@@ -90,29 +77,20 @@ namespace Desktop.Services
             var command = connection.CreateCommand();
             command.CommandText = @"
                 INSERT INTO ThiSinh (STT, SBD, HoTen, NgaySinh, GioiTinh, Lop,
-                    MonToan, MonVan, MonSu, MonDia, MonLy, MonHoa, MonSinh,
-                    MonKTPL, MonTin, MonCNCN, MonCNNN, NN, KyThiId)
+                    MonVan, MonToan, CacMonThi, MonCa1, MonCa2, KyThiId)
                 VALUES ($stt, $sbd, $hoten, $ngaysinh, $gioitinh, $lop,
-                    $toan, $van, $su, $dia, $ly, $hoa, $sinh,
-                    $ktpl, $tin, $cncn, $cnnn, $nn, $kythi)";
+                    $van, $toan, $cacmon, $ca1, $ca2, $kythi)";
             command.Parameters.AddWithValue("$stt", ts.STT);
             command.Parameters.AddWithValue("$sbd", ts.SBD);
             command.Parameters.AddWithValue("$hoten", ts.HoTen);
             command.Parameters.AddWithValue("$ngaysinh", ts.NgaySinh);
             command.Parameters.AddWithValue("$gioitinh", ts.GioiTinh);
             command.Parameters.AddWithValue("$lop", ts.Lop);
-            command.Parameters.AddWithValue("$toan", ts.MonToan);
-            command.Parameters.AddWithValue("$van", ts.MonVan);
-            command.Parameters.AddWithValue("$su", ts.MonSu);
-            command.Parameters.AddWithValue("$dia", ts.MonDia);
-            command.Parameters.AddWithValue("$ly", ts.MonLy);
-            command.Parameters.AddWithValue("$hoa", ts.MonHoa);
-            command.Parameters.AddWithValue("$sinh", ts.MonSinh);
-            command.Parameters.AddWithValue("$ktpl", ts.MonKTPL);
-            command.Parameters.AddWithValue("$tin", ts.MonTin);
-            command.Parameters.AddWithValue("$cncn", ts.MonCNCN);
-            command.Parameters.AddWithValue("$cnnn", ts.MonCNNN);
-            command.Parameters.AddWithValue("$nn", ts.NN);
+            command.Parameters.AddWithValue("$van", ts.MonVan ? 1 : 0);
+            command.Parameters.AddWithValue("$toan", ts.MonToan ? 1 : 0);
+            command.Parameters.AddWithValue("$cacmon", ts.CacMonThi ?? "");
+            command.Parameters.AddWithValue("$ca1", ts.MonCa1 ?? "");
+            command.Parameters.AddWithValue("$ca2", ts.MonCa2 ?? "");
             command.Parameters.AddWithValue("$kythi", kyThiId);
             command.ExecuteNonQuery();
         }
@@ -126,8 +104,8 @@ namespace Desktop.Services
             command.CommandText = @"
                 UPDATE ThiSinh SET
                     STT=$stt, SBD=$sbd, HoTen=$hoten, NgaySinh=$ngaysinh, GioiTinh=$gioitinh, Lop=$lop,
-                    MonToan=$toan, MonVan=$van, MonSu=$su, MonDia=$dia, MonLy=$ly, MonHoa=$hoa, MonSinh=$sinh,
-                    MonKTPL=$ktpl, MonTin=$tin, MonCNCN=$cncn, MonCNNN=$cnnn, NN=$nn, KyThiId=$kythi
+                    MonVan=$van, MonToan=$toan,
+                    CacMonThi=$cacmon, MonCa1=$ca1, MonCa2=$ca2, KyThiId=$kythi
                 WHERE Id=$id";
             command.Parameters.AddWithValue("$id", ts.Id);
             command.Parameters.AddWithValue("$stt", ts.STT);
@@ -136,18 +114,12 @@ namespace Desktop.Services
             command.Parameters.AddWithValue("$ngaysinh", ts.NgaySinh);
             command.Parameters.AddWithValue("$gioitinh", ts.GioiTinh);
             command.Parameters.AddWithValue("$lop", ts.Lop);
-            command.Parameters.AddWithValue("$toan", ts.MonToan);
-            command.Parameters.AddWithValue("$van", ts.MonVan);
-            command.Parameters.AddWithValue("$su", ts.MonSu);
-            command.Parameters.AddWithValue("$dia", ts.MonDia);
-            command.Parameters.AddWithValue("$ly", ts.MonLy);
-            command.Parameters.AddWithValue("$hoa", ts.MonHoa);
-            command.Parameters.AddWithValue("$sinh", ts.MonSinh);
-            command.Parameters.AddWithValue("$ktpl", ts.MonKTPL);
-            command.Parameters.AddWithValue("$tin", ts.MonTin);
-            command.Parameters.AddWithValue("$cncn", ts.MonCNCN);
-            command.Parameters.AddWithValue("$cnnn", ts.MonCNNN);
-            command.Parameters.AddWithValue("$nn", ts.NN);
+            command.Parameters.AddWithValue("$van", ts.MonVan ? 1 : 0);
+            command.Parameters.AddWithValue("$toan", ts.MonToan ? 1 : 0);
+            command.Parameters.AddWithValue("$cacmon", ts.CacMonThi ?? "");
+            command.Parameters.AddWithValue("$ca1", ts.MonCa1 ?? "");
+            command.Parameters.AddWithValue("$ca2", ts.MonCa2 ?? "");
+            command.Parameters.AddWithValue("$kythi", ts.KyThiId);
             command.ExecuteNonQuery();
         }
 

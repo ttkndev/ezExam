@@ -1,6 +1,8 @@
 ﻿using ClosedXML.Excel;
 using Desktop.Models;
 using System.Linq;
+using System;
+using System.Collections.Generic;
 
 namespace Desktop.Services
 {
@@ -35,13 +37,15 @@ namespace Desktop.Services
 
             foreach (var row in ws.RowsUsed().Skip(1))
             {
+                // Giả sử cột 6 chứa chuỗi môn thi: "Ngữ văn, Toán, Sử, KTPL"
                 var subjects = row.Cell(6).GetString();
-                var subjectList = subjects.Split(',').Select(s => s.Trim()).ToList();
+                var subjectList = subjects.Split(',')
+                                          .Select(s => s.Trim())
+                                          .Where(s => !string.IsNullOrEmpty(s))
+                                          .ToList();
 
-                string nn = subjectList.FirstOrDefault(s =>
-                    s == "Anh" || s == "Nga" || s == "Pháp" ||
-                    s == "Trung Quốc" || s == "Đức" ||
-                    s == "Nhật" || s == "Hàn") ?? "";
+                // Ghép lại thành chuỗi CacMonThi
+                var cacMonThi = string.Join(", ", subjectList);
 
                 var ts = new ThiSinh
                 {
@@ -50,27 +54,20 @@ namespace Desktop.Services
                     HoTen = row.Cell(3).GetString(),
                     NgaySinh = row.Cell(4).GetString(),
                     Lop = row.Cell(5).GetString(),
-                    GioiTinh = "",
 
-                    MonVan = subjectList.Contains("Ngữ văn") ? 1 : 0,
-                    MonToan = subjectList.Contains("Toán") ? 1 : 0,
-                    MonSu = subjectList.Contains("Sử") ? 1 : 0,
-                    MonDia = subjectList.Contains("Địa") ? 1 : 0,
-                    MonLy = subjectList.Contains("Lý") ? 1 : 0,
-                    MonHoa = subjectList.Contains("Hóa") ? 1 : 0,
-                    MonSinh = subjectList.Contains("Sinh") ? 1 : 0,
-                    MonKTPL = subjectList.Contains("KTPL") ? 1 : 0,
-                    MonTin = subjectList.Contains("Tin") ? 1 : 0,
-                    MonCNCN = subjectList.Contains("CNCN") ? 1 : 0,
-                    MonCNNN = subjectList.Contains("CNNN") ? 1 : 0,
+                    MonVan = subjectList.Contains("Ngữ văn"),
+                    MonToan = subjectList.Contains("Toán"),
 
-                    NN = nn,
+                    // Ca1, Ca2 sẽ gán sau bằng thuật toán
+                    MonCa1 = "",
+                    MonCa2 = "",
+
+                    CacMonThi = cacMonThi,
                     KyThiId = kyThiMacDinh.Id
                 };
 
                 _thiSinhService.AddThiSinh(ts, kyThiMacDinh.Id);
             }
         }
-
     }
 }
