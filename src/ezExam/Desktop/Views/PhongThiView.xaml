@@ -18,6 +18,8 @@
             <TextBox Text="{Binding RoomCapacity, UpdateSourceTrigger=PropertyChanged}" Width="80"/>
             <TextBlock Text="Chiến lược:" VerticalAlignment="Center" Margin="20,0,8,0"/>
             <ComboBox ItemsSource="{Binding Strategies}" SelectedItem="{Binding SelectedStrategy}" Width="180"/>
+            <TextBlock Text="Môn xem phòng:" VerticalAlignment="Center" Margin="20,0,8,0"/>
+            <ComboBox ItemsSource="{Binding AvailableSubjects}" SelectedItem="{Binding SelectedSubject}" Width="150"/>
             <Button Content="Tải thống kê" Command="{Binding LoadSubjectStatsCommand}" Width="100" Margin="12,0,0,0"/>
             <Button Content="Xếp phòng" Command="{Binding AllocateCommand}" Width="100" Margin="8,0,0,0"/>
             <TextBlock Text="{Binding TotalRooms, StringFormat=Tổng phòng: {0}}" VerticalAlignment="Center" Margin="16,0,0,0" FontWeight="SemiBold"/>
@@ -32,8 +34,8 @@
             </DataGrid>
         </GroupBox>
 
-        <GroupBox Grid.Row="3" Header="Tổng quan phòng thi" Margin="0,0,0,10">
-            <DataGrid ItemsSource="{Binding RoomDisplayRows}" AutoGenerateColumns="False" IsReadOnly="True">
+        <GroupBox Grid.Row="3" Header="Danh sách phòng theo môn đã chọn" Margin="0,0,0,10">
+            <DataGrid ItemsSource="{Binding FilteredRoomRows}" AutoGenerateColumns="False" IsReadOnly="True">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Phòng" Binding="{Binding RoomNumber}" Width="80"/>
                     <DataGridTextColumn Header="Môn trong phòng" Binding="{Binding SubjectsSummary}" Width="*"/>
@@ -44,14 +46,13 @@
             </DataGrid>
         </GroupBox>
 
-        <GroupBox Grid.Row="4" Header="Chi tiết từng môn theo phòng">
-            <DataGrid ItemsSource="{Binding RoomEntries}" AutoGenerateColumns="False" IsReadOnly="True">
+        <GroupBox Grid.Row="4" Header="Danh sách thí sinh theo từng phòng">
+            <DataGrid ItemsSource="{Binding CandidateRoomEntries}" AutoGenerateColumns="False" IsReadOnly="True">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Phòng" Binding="{Binding RoomNumber}" Width="80"/>
-                    <DataGridTextColumn Header="Môn" Binding="{Binding Subject}" Width="*"/>
-                    <DataGridTextColumn Header="Số lượng" Binding="{Binding Count}" Width="100"/>
-                    <DataGridTextColumn Header="SBD từ" Binding="{Binding StartSbd}" Width="100"/>
-                    <DataGridTextColumn Header="SBD đến" Binding="{Binding EndSbd}" Width="100"/>
+                    <DataGridTextColumn Header="SBD" Binding="{Binding Sbd}" Width="120"/>
+                    <DataGridTextColumn Header="Họ tên" Binding="{Binding HoTen}" Width="*"/>
+                    <DataGridTextColumn Header="Lớp" Binding="{Binding Lop}" Width="120"/>
                 </DataGrid.Columns>
             </DataGrid>
         </GroupBox>

@@ -17,6 +17,14 @@ namespace Desktop.ViewModels
         public int EndSbd { get; set; }
     }
 
+    public class CandidateRoomDisplay
+    {
+        public int RoomNumber { get; set; }
+        public string Sbd { get; set; } = string.Empty;
+        public string HoTen { get; set; } = string.Empty;
+        public string Lop { get; set; } = string.Empty;
+    }
+
     public class RoomDisplayRow
     {
         public int RoomNumber { get; set; }
@@ -38,8 +46,25 @@ namespace Desktop.ViewModels
         public ObservableCollection<SubjectCount> SubjectCounts { get; set; } = new();
         public ObservableCollection<RoomEntryDisplay> RoomEntries { get; set; } = new();
         public ObservableCollection<RoomDisplayRow> RoomDisplayRows { get; set; } = new();
+        public ObservableCollection<string> AvailableSubjects { get; set; } = new();
+        public ObservableCollection<RoomDisplayRow> FilteredRoomRows { get; set; } = new();
+        public ObservableCollection<CandidateRoomDisplay> CandidateRoomEntries { get; set; } = new();
+
+        private readonly List<ThiSinh> _lastCandidates = new();
+        private readonly Dictionary<string, List<ThiSinh>> _subjectCandidateMap = new(StringComparer.OrdinalIgnoreCase);
 
         public string KyThiMacDinhText { get; set; } = string.Empty;
+        private string _selectedSubject = string.Empty;
+        public string SelectedSubject
+        {
+            get => _selectedSubject;
+            set
+            {
+                _selectedSubject = value ?? string.Empty;
+                OnPropertyChanged();
+                BuildSubjectRoomDetails();
+            }
+        }
 
         private int _roomCapacity = 24;
         public int RoomCapacity
@@ -86,6 +111,11 @@ namespace Desktop.ViewModels
             SubjectCounts.Clear();
             RoomEntries.Clear();
             RoomDisplayRows.Clear();
+            AvailableSubjects.Clear();
+            FilteredRoomRows.Clear();
+            CandidateRoomEntries.Clear();
+            _lastCandidates.Clear();
+            _subjectCandidateMap.Clear();
 
             var kyThi = _kyThiService.GetKyThiMacDinh();
             if (kyThi == null)
@@ -98,6 +128,7 @@ namespace Desktop.ViewModels
 
             KyThiMacDinhText = $"Kỳ thi mặc định: {kyThi.TenKyThi} ({kyThi.NgayThi})";
             var thiSinhList = _thiSinhService.GetThiSinhByKyThi(kyThi.Id);
+            _lastCandidates.AddRange(thiSinhList);
 
             var subjectMap = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             foreach (var ts in thiSinhList)
@@ -117,6 +148,11 @@ namespace Desktop.ViewModels
             foreach (var item in subjectMap.OrderByDescending(x => x.Value))
             {
                 SubjectCounts.Add(new SubjectCount { Subject = item.Key, Count = item.Value });
+                AvailableSubjects.Add(item.Key);
+            }
+            if (AvailableSubjects.Any())
+            {
+                SelectedSubject = AvailableSubjects.First();
             }
 
             OnPropertyChanged(nameof(KyThiMacDinhText));
@@ -127,6 +163,9 @@ namespace Desktop.ViewModels
         {
             RoomEntries.Clear();
             RoomDisplayRows.Clear();
+            FilteredRoomRows.Clear();
+            CandidateRoomEntries.Clear();
+            _subjectCandidateMap.Clear();
             var kyThi = _kyThiService.GetKyThiMacDinh();
             if (kyThi == null)
             {
@@ -179,8 +218,72 @@ namespace Desktop.ViewModels
             }
 
             _databaseService.SaveRoomAllocations(kyThi.Id, persistedRows, SelectedStrategy.ToString(), RoomCapacity);
+            BuildSubjectRoomDetails();
 
             OnPropertyChanged(nameof(TotalRooms));
+        }
+
+        private void BuildSubjectRoomDetails()
+        {
+            FilteredRoomRows.Clear();
+            CandidateRoomEntries.Clear();
+            _subjectCandidateMap.Clear();
+
+            if (string.IsNullOrWhiteSpace(SelectedSubject) || !_lastCandidates.Any() || RoomCapacity <= 0)
+                return;
+
+            var orderedCandidates = _lastCandidates
+                .Where(ts => CandidateContainsSubject(ts, SelectedSubject))
+                .OrderBy(ParseSbd)
+                .ThenBy(ts => ts.SBD)
+                .ToList();
+
+            if (!orderedCandidates.Any()) return;
+            _subjectCandidateMap[SelectedSubject] = orderedCandidates;
+
+            var roomNo = 1;
+            for (var i = 0; i < orderedCandidates.Count; i += RoomCapacity)
+            {
+                var roomCandidates = orderedCandidates.Skip(i).Take(RoomCapacity).ToList();
+                var startSbd = roomCandidates.First().SBD;
+                var endSbd = roomCandidates.Last().SBD;
+
+                FilteredRoomRows.Add(new RoomDisplayRow
+                {
+                    RoomNumber = roomNo,
+                    SubjectsSummary = SelectedSubject,
+                    TotalCandidates = roomCandidates.Count,
+                    Capacity = RoomCapacity,
+                    SbdRange = $"{startSbd} - {endSbd}"
+                });
+
+                foreach (var ts in roomCandidates)
+                {
+                    CandidateRoomEntries.Add(new CandidateRoomDisplay
+                    {
+                        RoomNumber = roomNo,
+                        Sbd = ts.SBD,
+                        HoTen = ts.HoTen,
+                        Lop = ts.Lop
+                    });
+                }
+
+                roomNo++;
+            }
+        }
+
+        private static bool CandidateContainsSubject(ThiSinh thiSinh, string subject)
+        {
+            return (thiSinh.CacMonThi ?? string.Empty)
+                .Split(',')
+                .Select(x => x.Trim())
+                .Any(x => x.Equals(subject, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static int ParseSbd(ThiSinh thiSinh)
+        {
+            if (int.TryParse((thiSinh.SBD ?? string.Empty).Trim(), out var sbd)) return sbd;
+            return int.MaxValue;
         }
     }
 }
