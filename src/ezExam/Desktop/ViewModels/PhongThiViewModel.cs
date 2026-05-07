@@ -17,6 +17,17 @@ namespace Desktop.ViewModels
         public int EndSbd { get; set; }
     }
 
+    public class RoomDisplayRow
+    {
+        public int RoomNumber { get; set; }
+        public string SubjectsSummary { get; set; } = string.Empty;
+        public int TotalCandidates { get; set; }
+        public int Capacity { get; set; }
+        public string OccupancyText => $"{TotalCandidates}/{Capacity}";
+        public double OccupancyPercent => Capacity <= 0 ? 0 : (double)TotalCandidates / Capacity * 100;
+        public string SbdRange { get; set; } = string.Empty;
+    }
+
     public class PhongThiViewModel : BaseViewModel
     {
         private readonly ThiSinhService _thiSinhService;
@@ -26,6 +37,7 @@ namespace Desktop.ViewModels
 
         public ObservableCollection<SubjectCount> SubjectCounts { get; set; } = new();
         public ObservableCollection<RoomEntryDisplay> RoomEntries { get; set; } = new();
+        public ObservableCollection<RoomDisplayRow> RoomDisplayRows { get; set; } = new();
 
         public string KyThiMacDinhText { get; set; } = string.Empty;
 
@@ -73,6 +85,7 @@ namespace Desktop.ViewModels
         {
             SubjectCounts.Clear();
             RoomEntries.Clear();
+            RoomDisplayRows.Clear();
 
             var kyThi = _kyThiService.GetKyThiMacDinh();
             if (kyThi == null)
@@ -113,6 +126,7 @@ namespace Desktop.ViewModels
         private void Allocate()
         {
             RoomEntries.Clear();
+            RoomDisplayRows.Clear();
             var kyThi = _kyThiService.GetKyThiMacDinh();
             if (kyThi == null)
             {
@@ -145,6 +159,23 @@ namespace Desktop.ViewModels
                         EndSbd = entry.EndSbd
                     });
                 }
+            }
+
+
+            foreach (var room in plans)
+            {
+                var subjectSummary = string.Join(", ", room.Entries.Select(e => $"{e.Subject}: {e.Count}"));
+                var minSbd = room.Entries.Min(e => e.StartSbd);
+                var maxSbd = room.Entries.Max(e => e.EndSbd);
+
+                RoomDisplayRows.Add(new RoomDisplayRow
+                {
+                    RoomNumber = room.RoomNumber,
+                    SubjectsSummary = subjectSummary,
+                    TotalCandidates = room.Total,
+                    Capacity = RoomCapacity,
+                    SbdRange = $"{minSbd} - {maxSbd}"
+                });
             }
 
             _databaseService.SaveRoomAllocations(kyThi.Id, persistedRows, SelectedStrategy.ToString(), RoomCapacity);
