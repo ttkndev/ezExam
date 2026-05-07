@@ -22,6 +22,7 @@ namespace Desktop.ViewModels
         private readonly ThiSinhService _thiSinhService;
         private readonly KyThiService _kyThiService;
         private readonly PhongThiAllocator _allocator;
+        private readonly DatabaseService _databaseService;
 
         public ObservableCollection<SubjectCount> SubjectCounts { get; set; } = new();
         public ObservableCollection<RoomEntryDisplay> RoomEntries { get; set; } = new();
@@ -50,16 +51,17 @@ namespace Desktop.ViewModels
         public ICommand AllocateCommand { get; }
 
         // Constructor mặc định để tương thích UI hiện tại.
-        public PhongThiViewModel() : this(new ThiSinhService(), new KyThiService(), new PhongThiAllocator())
+        public PhongThiViewModel() : this(new ThiSinhService(), new KyThiService(), new PhongThiAllocator(), new DatabaseService())
         {
         }
 
         // Constructor DI: dễ unit test và dễ thay thế service/allocator theo MVVM.
-        public PhongThiViewModel(ThiSinhService thiSinhService, KyThiService kyThiService, PhongThiAllocator allocator)
+        public PhongThiViewModel(ThiSinhService thiSinhService, KyThiService kyThiService, PhongThiAllocator allocator, DatabaseService databaseService)
         {
             _thiSinhService = thiSinhService ?? throw new ArgumentNullException(nameof(thiSinhService));
             _kyThiService = kyThiService ?? throw new ArgumentNullException(nameof(kyThiService));
             _allocator = allocator ?? throw new ArgumentNullException(nameof(allocator));
+            _databaseService = databaseService ?? throw new ArgumentNullException(nameof(databaseService));
 
             LoadSubjectStatsCommand = new RelayCommand(_ => LoadSubjectStats());
             AllocateCommand = new RelayCommand(_ => Allocate(), _ => SubjectCounts.Any() && RoomCapacity > 0);
@@ -111,12 +113,29 @@ namespace Desktop.ViewModels
         private void Allocate()
         {
             RoomEntries.Clear();
+            var kyThi = _kyThiService.GetKyThiMacDinh();
+            if (kyThi == null)
+            {
+                OnPropertyChanged(nameof(TotalRooms));
+                return;
+            }
+
             var plans = _allocator.Allocate(SubjectCounts.ToList(), RoomCapacity, SelectedStrategy);
+            var persistedRows = new List<RoomAllocationRow>();
 
             foreach (var room in plans)
             {
                 foreach (var entry in room.Entries)
                 {
+                    persistedRows.Add(new RoomAllocationRow
+                    {
+                        RoomNumber = room.RoomNumber,
+                        Subject = entry.Subject,
+                        CandidateCount = entry.Count,
+                        StartSbd = entry.StartSbd,
+                        EndSbd = entry.EndSbd
+                    });
+
                     RoomEntries.Add(new RoomEntryDisplay
                     {
                         RoomNumber = room.RoomNumber,
@@ -127,6 +146,8 @@ namespace Desktop.ViewModels
                     });
                 }
             }
+
+            _databaseService.SaveRoomAllocations(kyThi.Id, persistedRows, SelectedStrategy.ToString(), RoomCapacity);
 
             OnPropertyChanged(nameof(TotalRooms));
         }
