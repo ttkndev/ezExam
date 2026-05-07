@@ -13,7 +13,6 @@
                        FontWeight="Bold" Margin="10"/>
             <Button Content="Kỳ thi" Command="{Binding ShowKyThiCommand}" Style="{StaticResource NavButtonStyle}"/>
             <Button Content="Thí sinh" Command="{Binding ShowThiSinhCommand}" Style="{StaticResource NavButtonStyle}"/>
-            <Button Content="Xếp ca" Command="{Binding ShowCaThiCommand}" Style="{StaticResource NavButtonStyle}"/>
             <Button Content="Xếp phòng" Command="{Binding ShowPhongThiCommand}" Style="{StaticResource NavButtonStyle}"/>
             <Button Content="Xuất file" Command="{Binding ShowExportCommand}" Style="{StaticResource NavButtonStyle}"/>
             <Button Content="Cài đặt" Command="{Binding ShowAboutCommand}" Style="{StaticResource NavButtonStyle}"/>

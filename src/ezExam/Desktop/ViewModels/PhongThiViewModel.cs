@@ -1,4 +1,5 @@
 using Desktop.Helpers;
+using Desktop.Models;
 using Desktop.Services;
 using System;
 using System.Collections.Generic;
@@ -40,7 +41,7 @@ namespace Desktop.ViewModels
     {
         private readonly ThiSinhService _thiSinhService;
         private readonly KyThiService _kyThiService;
-        private readonly PhongThiAllocator _allocator;
+        private readonly PhongThiService _allocator;
         private readonly DatabaseService _databaseService;
 
         public ObservableCollection<SubjectCount> SubjectCounts { get; set; } = new();
@@ -88,12 +89,12 @@ namespace Desktop.ViewModels
         public ICommand AllocateCommand { get; }
 
         // Constructor mặc định để tương thích UI hiện tại.
-        public PhongThiViewModel() : this(new ThiSinhService(), new KyThiService(), new PhongThiAllocator(), new DatabaseService())
+        public PhongThiViewModel() : this(new ThiSinhService(), new KyThiService(), new PhongThiService(), new DatabaseService())
         {
         }
 
         // Constructor DI: dễ unit test và dễ thay thế service/allocator theo MVVM.
-        public PhongThiViewModel(ThiSinhService thiSinhService, KyThiService kyThiService, PhongThiAllocator allocator, DatabaseService databaseService)
+        public PhongThiViewModel(ThiSinhService thiSinhService, KyThiService kyThiService, PhongThiService allocator, DatabaseService databaseService)
         {
             _thiSinhService = thiSinhService ?? throw new ArgumentNullException(nameof(thiSinhService));
             _kyThiService = kyThiService ?? throw new ArgumentNullException(nameof(kyThiService));

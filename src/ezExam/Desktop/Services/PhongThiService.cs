@@ -40,7 +40,7 @@ namespace Desktop.Services
         public int Total => Entries.Sum(e => e.Count);
     }
 
-    public class PhongThiAllocator
+    public class PhongThiService
     {
         /// <summary>
         /// Hàm tổng quát dùng để xếp phòng cho một danh sách môn đã có số lượng đăng ký.

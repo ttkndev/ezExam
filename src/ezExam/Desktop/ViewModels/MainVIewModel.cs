@@ -35,9 +35,7 @@ namespace Desktop.ViewModels
             // Gán command
             ShowKyThiCommand = new RelayCommand(o => CurrentView = new KyThiView());
             ShowThiSinhCommand = new RelayCommand(o => CurrentView = new ThiSinhView());
-            ShowCaThiCommand = new RelayCommand(o => CurrentView = new CaThiView());
             ShowPhongThiCommand = new RelayCommand(o => CurrentView = new PhongThiView());
-            ShowExportCommand = new RelayCommand(o => CurrentView = new ExportView());
             ShowAboutCommand = new RelayCommand(o => CurrentView = new AboutView());
         }
 
