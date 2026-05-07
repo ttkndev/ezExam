@@ -1,14 +1,15 @@
 ﻿using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
+using Desktop.Models;
 
 namespace Desktop.Services
 {
-    public class DatabaseService
+    public class PhongThiXepLichService
     {
         private readonly string _connectionString = "Data Source=ezExam.db";
 
-        public DatabaseService()
+        public PhongThiXepLichService()
         {
             using var connection = new SqliteConnection(_connectionString);
             connection.Open();
@@ -79,14 +80,5 @@ namespace Desktop.Services
 
             transaction.Commit();
         }
-    }
-
-    public class RoomAllocationRow
-    {
-        public int RoomNumber { get; set; }
-        public string Subject { get; set; } = string.Empty;
-        public int CandidateCount { get; set; }
-        public int StartSbd { get; set; }
-        public int EndSbd { get; set; }
     }
 }

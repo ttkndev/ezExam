@@ -5,6 +5,7 @@ using System.Linq;
 
 namespace Desktop.Services
 {
+<<<<<<< HEAD:src/ezExam/Desktop/Services/PhongThiService.cs
     public enum RoomAllocationStrategy
     {
         MaxMerge,
@@ -41,6 +42,9 @@ namespace Desktop.Services
     }
 
     public class PhongThiService
+=======
+    public class PhongThiAllocator
+>>>>>>> 2f0b510af1b33b945425ec90da8d69fb7c777048:src/ezExam/Desktop/Services/PhongThiAllocator.cs
     {
         /// <summary>
         /// Hàm tổng quát dùng để xếp phòng cho một danh sách môn đã có số lượng đăng ký.
