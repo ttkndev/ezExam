@@ -186,30 +186,44 @@ namespace Desktop.ViewModels
         {
             UpdatePairStats();
 
-            var subjects = ThiSinhList.SelectMany(GetElectiveSubjects).Distinct().ToList();
-            var partition = subjects.ToDictionary(s => s, _ => false);
-            var pairWeights = PairStats.ToDictionary(p => (p.MonA, p.MonB), p => p.Count);
-
-            var improved = true;
-            while (improved)
+            var graph = new Dictionary<string, HashSet<string>>();
+            foreach (var ts in ThiSinhList)
             {
-                improved = false;
-                foreach (var subject in subjects)
+                var electives = GetElectiveSubjects(ts);
+                if (electives.Count != 2) continue;
+
+                var a = electives[0];
+                var b = electives[1];
+                if (a == b) continue;
+
+                if (!graph.ContainsKey(a)) graph[a] = new HashSet<string>();
+                if (!graph.ContainsKey(b)) graph[b] = new HashSet<string>();
+                graph[a].Add(b);
+                graph[b].Add(a);
+            }
+
+            var partition = new Dictionary<string, bool>();
+            var queue = new Queue<string>();
+
+            foreach (var root in graph.Keys)
+            {
+                if (partition.ContainsKey(root)) continue;
+
+                partition[root] = false;
+                queue.Enqueue(root);
+
+                while (queue.Count > 0)
                 {
-                    var gain = 0;
-                    foreach (var other in subjects.Where(s => s != subject))
+                    var current = queue.Dequeue();
+                    foreach (var neighbor in graph[current])
                     {
-                        var key = string.Compare(subject, other, StringComparison.Ordinal) < 0 ? (subject, other) : (other, subject);
-                        if (!pairWeights.TryGetValue(key, out var w)) continue;
-
-                        var currentlySplit = partition[subject] != partition[other];
-                        gain += currentlySplit ? -w : w;
-                    }
-
-                    if (gain > 0)
-                    {
-                        partition[subject] = !partition[subject];
-                        improved = true;
+                        if (!partition.ContainsKey(neighbor))
+                        {
+                            partition[neighbor] = !partition[current];
+                            queue.Enqueue(neighbor);
+                        }
+                        // Nếu đồ thị có chu trình lẻ thì sẽ phát sinh cạnh cùng màu.
+                        // Trường hợp này vẫn gán ca theo màu hiện có để giảm xung đột.
                     }
                 }
             }
@@ -227,11 +241,18 @@ namespace Desktop.ViewModels
                     continue;
                 }
 
-                var ca1 = electives.FirstOrDefault(s => partition.GetValueOrDefault(s, false));
-                var ca2 = electives.FirstOrDefault(s => !partition.GetValueOrDefault(s, false));
+                var ca1 = electives.FirstOrDefault(s => !partition.GetValueOrDefault(s, false));
+                var ca2 = electives.FirstOrDefault(s => partition.GetValueOrDefault(s, false));
 
-                ts.MonCa1 = ca1 ?? electives[0];
-                ts.MonCa2 = ca2 ?? electives.Skip(1).FirstOrDefault() ?? electives[0];
+                if (ca1 == null || ca2 == null)
+                {
+                    ts.MonCa1 = electives[0];
+                    ts.MonCa2 = electives[1];
+                    continue;
+                }
+
+                ts.MonCa1 = ca1;
+                ts.MonCa2 = ca2;
             }
 
             SaveAllThiSinh();
