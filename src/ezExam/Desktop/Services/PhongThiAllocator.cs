@@ -5,41 +5,6 @@ using System.Linq;
 
 namespace Desktop.Services
 {
-    public enum RoomAllocationStrategy
-    {
-        MaxMerge,
-        SequentialSbd
-    }
-
-    public enum ExamSession
-    {
-        MandatoryVan,
-        MandatoryToan,
-        OptionalCa1,
-        OptionalCa2
-    }
-
-    public class SubjectCount
-    {
-        public string Subject { get; set; } = string.Empty;
-        public int Count { get; set; }
-    }
-
-    public class RoomEntry
-    {
-        public string Subject { get; set; } = string.Empty;
-        public int Count { get; set; }
-        public int StartSbd { get; set; }
-        public int EndSbd { get; set; }
-    }
-
-    public class RoomPlan
-    {
-        public int RoomNumber { get; set; }
-        public List<RoomEntry> Entries { get; set; } = new();
-        public int Total => Entries.Sum(e => e.Count);
-    }
-
     public class PhongThiAllocator
     {
         /// <summary>
