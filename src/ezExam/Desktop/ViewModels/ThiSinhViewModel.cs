@@ -187,14 +187,36 @@ namespace Desktop.ViewModels
             UpdatePairStats();
 
             var subjects = ThiSinhList.SelectMany(GetElectiveSubjects).Distinct().ToList();
-            var partition = subjects.ToDictionary(s => s, _ => false);
+            if (!subjects.Any())
+            {
+                SaveAllThiSinh();
+                return;
+            }
+
             var pairWeights = PairStats.ToDictionary(p => (p.MonA, p.MonB), p => p.Count);
+            var weightedDegree = subjects.ToDictionary(subject => subject, subject =>
+            {
+                var degree = 0;
+                foreach (var other in subjects.Where(s => s != subject))
+                {
+                    var key = string.Compare(subject, other, StringComparison.Ordinal) < 0 ? (subject, other) : (other, subject);
+                    if (pairWeights.TryGetValue(key, out var w)) degree += w;
+                }
+                return degree;
+            });
+
+            var partition = new Dictionary<string, bool>();
+            var sortedByWeight = subjects.OrderByDescending(s => weightedDegree[s]).ToList();
+            for (var i = 0; i < sortedByWeight.Count; i++)
+            {
+                partition[sortedByWeight[i]] = i % 2 == 0;
+            }
 
             var improved = true;
             while (improved)
             {
                 improved = false;
-                foreach (var subject in subjects)
+                foreach (var subject in sortedByWeight)
                 {
                     var gain = 0;
                     foreach (var other in subjects.Where(s => s != subject))
@@ -227,11 +249,13 @@ namespace Desktop.ViewModels
                     continue;
                 }
 
-                var ca1 = electives.FirstOrDefault(s => partition.GetValueOrDefault(s, false));
-                var ca2 = electives.FirstOrDefault(s => !partition.GetValueOrDefault(s, false));
+                var ca1Candidates = electives.Where(s => partition.GetValueOrDefault(s, false)).ToList();
+                var ca2Candidates = electives.Where(s => !partition.GetValueOrDefault(s, false)).ToList();
 
-                ts.MonCa1 = ca1 ?? electives[0];
-                ts.MonCa2 = ca2 ?? electives.Skip(1).FirstOrDefault() ?? electives[0];
+                ts.MonCa1 = ca1Candidates.FirstOrDefault() ?? electives[0];
+                ts.MonCa2 = ca2Candidates.FirstOrDefault(s => s != ts.MonCa1)
+                            ?? electives.FirstOrDefault(s => s != ts.MonCa1)
+                            ?? ts.MonCa1;
             }
 
             SaveAllThiSinh();
