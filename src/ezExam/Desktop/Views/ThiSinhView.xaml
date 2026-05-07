@@ -24,7 +24,7 @@
             <Button Content="Import" Command="{Binding ImportExcelCommand}" Width="90" Margin="8,0,0,0"/>
             <Button Content="Thêm" Command="{Binding AddThiSinhCommand}" Width="80" Margin="8,0,0,0"/>
             <Button Content="Lưu" Command="{Binding SaveAllThiSinhCommand}" Width="80" Margin="8,0,0,0"/>
-            <Button Content="Xóa" Command="{Binding DeleteThiSinhCommand}" Width="80" Margin="8,0,0,0"/>
+            <Button Content="Xóa tất cả" Command="{Binding DeleteAllThiSinhCommand}" Width="100" Margin="8,0,0,0"/>
             <Button Content="Xếp ca thi" Command="{Binding AssignCaThiCommand}" Width="110" Margin="8,0,0,0"/>
         </StackPanel>
 
