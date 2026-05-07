@@ -1,5 +1,4 @@
 ﻿using Desktop.Models;
-using Desktop.Models.Desktop.Models;
 using Microsoft.Data.Sqlite;
 using System.Collections.Generic;
 
