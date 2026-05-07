@@ -20,6 +20,7 @@ namespace Desktop.ViewModels
     public class CandidateRoomDisplay
     {
         public int RoomNumber { get; set; }
+        public string Subject { get; set; } = string.Empty;
         public string Sbd { get; set; } = string.Empty;
         public string HoTen { get; set; } = string.Empty;
         public string Lop { get; set; } = string.Empty;
@@ -146,10 +147,12 @@ namespace Desktop.ViewModels
             }
 
             foreach (var item in subjectMap.OrderByDescending(x => x.Value))
-            {
                 SubjectCounts.Add(new SubjectCount { Subject = item.Key, Count = item.Value });
-                AvailableSubjects.Add(item.Key);
-            }
+
+            AvailableSubjects.Add("Văn");
+            AvailableSubjects.Add("Toán");
+            AvailableSubjects.Add("Ca 1");
+            AvailableSubjects.Add("Ca 2");
             if (AvailableSubjects.Any())
             {
                 SelectedSubject = AvailableSubjects.First();
@@ -232,42 +235,98 @@ namespace Desktop.ViewModels
             if (string.IsNullOrWhiteSpace(SelectedSubject) || !_lastCandidates.Any() || RoomCapacity <= 0)
                 return;
 
+            if (SelectedSubject.Equals("Ca 1", StringComparison.OrdinalIgnoreCase) ||
+                SelectedSubject.Equals("Ca 2", StringComparison.OrdinalIgnoreCase))
+            {
+                BuildOptionalSessionDetails(SelectedSubject);
+                return;
+            }
+
+            var fixedSubject = SelectedSubject.Equals("Văn", StringComparison.OrdinalIgnoreCase) ? "Văn" : "Toán";
             var orderedCandidates = _lastCandidates
-                .Where(ts => CandidateContainsSubject(ts, SelectedSubject))
+                .Where(ts => CandidateContainsSubject(ts, fixedSubject))
                 .OrderBy(ParseSbd)
                 .ThenBy(ts => ts.SBD)
                 .ToList();
 
             if (!orderedCandidates.Any()) return;
             _subjectCandidateMap[SelectedSubject] = orderedCandidates;
+            PopulateSequentialRooms(orderedCandidates, fixedSubject);
+        }
 
+        private void BuildOptionalSessionDetails(string sessionName)
+        {
+            var ca1 = sessionName.Equals("Ca 1", StringComparison.OrdinalIgnoreCase);
+            var sessionCandidates = _lastCandidates
+                .Where(ts => !string.IsNullOrWhiteSpace(ca1 ? ts.MonCa1 : ts.MonCa2))
+                .OrderBy(ParseSbd)
+                .ThenBy(ts => ts.SBD)
+                .ToList();
+            if (!sessionCandidates.Any()) return;
+
+            var subjectCounts = sessionCandidates
+                .GroupBy(ts => ca1 ? ts.MonCa1.Trim() : ts.MonCa2.Trim(), StringComparer.OrdinalIgnoreCase)
+                .Select(g => new SubjectCount { Subject = g.Key, Count = g.Count() })
+                .OrderByDescending(x => x.Count)
+                .ToList();
+            var plans = _allocator.Allocate(subjectCounts, RoomCapacity, SelectedStrategy);
+
+            foreach (var room in plans)
+            {
+                var minSbd = room.Entries.Min(e => e.StartSbd);
+                var maxSbd = room.Entries.Max(e => e.EndSbd);
+                FilteredRoomRows.Add(new RoomDisplayRow
+                {
+                    RoomNumber = room.RoomNumber,
+                    SubjectsSummary = string.Join(", ", room.Entries.Select(e => $"{e.Subject}: {e.Count}")),
+                    TotalCandidates = room.Total,
+                    Capacity = RoomCapacity,
+                    SbdRange = $"{minSbd} - {maxSbd}"
+                });
+            }
+
+            var roomNo = 1;
+            foreach (var subject in subjectCounts)
+            {
+                var candidates = sessionCandidates
+                    .Where(ts => (ca1 ? ts.MonCa1 : ts.MonCa2).Equals(subject.Subject, StringComparison.OrdinalIgnoreCase))
+                    .OrderBy(ParseSbd).ThenBy(ts => ts.SBD)
+                    .ToList();
+                for (var i = 0; i < candidates.Count; i += RoomCapacity)
+                {
+                    foreach (var ts in candidates.Skip(i).Take(RoomCapacity))
+                    {
+                        CandidateRoomEntries.Add(new CandidateRoomDisplay
+                        {
+                            RoomNumber = roomNo,
+                            Subject = subject.Subject,
+                            Sbd = ts.SBD,
+                            HoTen = ts.HoTen,
+                            Lop = ts.Lop
+                        });
+                    }
+                    roomNo++;
+                }
+            }
+        }
+
+        private void PopulateSequentialRooms(List<ThiSinh> orderedCandidates, string subject)
+        {
             var roomNo = 1;
             for (var i = 0; i < orderedCandidates.Count; i += RoomCapacity)
             {
                 var roomCandidates = orderedCandidates.Skip(i).Take(RoomCapacity).ToList();
-                var startSbd = roomCandidates.First().SBD;
-                var endSbd = roomCandidates.Last().SBD;
-
                 FilteredRoomRows.Add(new RoomDisplayRow
                 {
                     RoomNumber = roomNo,
-                    SubjectsSummary = SelectedSubject,
+                    SubjectsSummary = subject,
                     TotalCandidates = roomCandidates.Count,
                     Capacity = RoomCapacity,
-                    SbdRange = $"{startSbd} - {endSbd}"
+                    SbdRange = $"{roomCandidates.First().SBD} - {roomCandidates.Last().SBD}"
                 });
 
                 foreach (var ts in roomCandidates)
-                {
-                    CandidateRoomEntries.Add(new CandidateRoomDisplay
-                    {
-                        RoomNumber = roomNo,
-                        Sbd = ts.SBD,
-                        HoTen = ts.HoTen,
-                        Lop = ts.Lop
-                    });
-                }
-
+                    CandidateRoomEntries.Add(new CandidateRoomDisplay { RoomNumber = roomNo, Subject = subject, Sbd = ts.SBD, HoTen = ts.HoTen, Lop = ts.Lop });
                 roomNo++;
             }
         }
