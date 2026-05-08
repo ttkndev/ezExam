@@ -134,7 +134,7 @@
                                     VerticalAlignment="Center">
                                         <TextBlock FontSize="12" Foreground="#2471A3"
                                            FontWeight="Bold">
-                                    <Run Text="{Binding Assignments.Count}"/>
+                                    <Run Text="{Binding Assignments.Count, Mode=OneWay}"/>
                                     <Run Text=" TS"/>
                                         </TextBlock>
                                     </Border>
@@ -147,7 +147,7 @@
                             <Style TargetType="ListBoxItem">
                                 <Setter Property="Padding" Value="6 2"/>
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Assignments.Count}"
+                                    <DataTrigger Binding="{Binding Assignments.Count, Mode=OneWay}"
                                          Value="24">
                                         <Setter Property="Background" Value="Transparent"/>
                                     </DataTrigger>
