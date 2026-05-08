@@ -111,7 +111,6 @@ namespace ezExam.App.ViewModels
 
         // --- Commands ---
         public RelayCommand ScheduleRoomsCommand { get; }
-        public RelayCommand ReScheduleShiftCommand { get; }
         public RelayCommand RefreshCommand { get; }
 
         public RoomViewModel(
@@ -124,7 +123,6 @@ namespace ezExam.App.ViewModels
             _roomRepo = roomRepo;
 
             ScheduleRoomsCommand = new RelayCommand(_ => ScheduleRoomsAsync());
-            ReScheduleShiftCommand = new RelayCommand(_ => ReScheduleShiftAsync());
             RefreshCommand = new RelayCommand(_ => LoadAllRoomsAsync());
         }
 
@@ -233,12 +231,6 @@ namespace ezExam.App.ViewModels
             finally { IsBusy = false; }
         }
 
-        /// <summary>Chạy lại xếp ca rồi xếp phòng</summary>
-        private async Task ReScheduleShiftAsync()
-        {
-            _shiftResult = null;
-            await ScheduleRoomsAsync();
-        }
 
         /// <summary>Load danh sách TS khi chọn phòng</summary>
         private void LoadRoomCandidates(ExamRoom? room)

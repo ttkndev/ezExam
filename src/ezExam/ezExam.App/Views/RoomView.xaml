@@ -35,11 +35,6 @@
                         Style="{StaticResource PrimaryButton}"
                         Margin="0 0 8 0"/>
 
-                <Button Content="🔁 Xếp lại ca + phòng"
-                        Command="{Binding ReScheduleShiftCommand}"
-                        Padding="12 8" FontSize="13"
-                        Margin="0 0 8 0"/>
-
                 <Button Content="🔄 Tải lại"
                         Command="{Binding RefreshCommand}"
                         Padding="12 8" FontSize="13"

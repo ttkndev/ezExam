@@ -118,8 +118,37 @@
                     <Run Text="Tổng số thí sinh: "/>
                     <Run Text="{Binding Statistics.TotalCandidates}" FontWeight="Bold"/>
                 </TextBlock>
-                <TextBlock Margin="0 0 0 6" FontSize="13" Text="{Binding SubjectStatisticsLine}" TextWrapping="Wrap"/>
-                <TextBlock FontSize="13" Text="{Binding SubjectPairStatisticsLine}" TextWrapping="Wrap"/>
+                <TextBlock Margin="0 0 0 6" FontSize="13" Text="Số lượng đăng ký môn:" FontWeight="SemiBold"/>
+                <ItemsControl ItemsSource="{Binding SubjectStatisticTags}" Margin="0 0 0 8">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#EBF5FB" BorderBrush="#D6EAF8" BorderThickness="1" CornerRadius="10" Padding="8 3" Margin="0 0 6 6">
+                                <TextBlock Text="{Binding}" FontSize="12" Foreground="#1F618D"/>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <TextBlock Margin="0 0 0 6" FontSize="13" Text="Số lượng đăng ký cặp môn tự chọn:" FontWeight="SemiBold"/>
+                <ItemsControl ItemsSource="{Binding SubjectPairStatisticTags}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#FDEDEC" BorderBrush="#F5C6CB" BorderThickness="1" CornerRadius="10" Padding="8 3" Margin="0 0 6 6">
+                                <TextBlock Text="{Binding}" FontSize="12" Foreground="#922B21"/>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </StackPanel>
         </Border>
 

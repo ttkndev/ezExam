@@ -39,6 +39,8 @@ namespace ezExam.App.ViewModels
                 OnPropertyChanged(nameof(HasStatistics));
                 OnPropertyChanged(nameof(SubjectStatisticsLine));
                 OnPropertyChanged(nameof(SubjectPairStatisticsLine));
+                OnPropertyChanged(nameof(SubjectStatisticTags));
+                OnPropertyChanged(nameof(SubjectPairStatisticTags));
             }
         }
         public bool HasStatistics => _statistics != null;
@@ -50,6 +52,16 @@ namespace ezExam.App.ViewModels
         public string SubjectPairStatisticsLine => Statistics == null
             ? ""
             : $"Số lượng đăng ký cặp môn tự chọn: {string.Join(" | ", Statistics.CandidatesBySubjectPair.Select(kv => $"({kv.Key}): {kv.Value}"))}";
+
+        public IEnumerable<string> SubjectStatisticTags =>
+            Statistics?.CandidatesBySubject
+                .Select(kv => $"{kv.Key}: {kv.Value}")
+            ?? Enumerable.Empty<string>();
+
+        public IEnumerable<string> SubjectPairStatisticTags =>
+            Statistics?.CandidatesBySubjectPair
+                .Select(kv => $"{kv.Key}: {kv.Value}")
+            ?? Enumerable.Empty<string>();
 
         // --- Kết quả xếp ca ---
         private ShiftScheduleResult? _shiftResult;
