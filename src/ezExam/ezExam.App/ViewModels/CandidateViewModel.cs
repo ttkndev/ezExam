@@ -134,6 +134,8 @@ namespace ezExam.App.ViewModels
 
         // --- Commands ---
         public RelayCommand ImportCommand { get; }
+        public RelayCommand DeleteAllCommand { get; }
+        public RelayCommand ClearShiftCommand { get; }
         public RelayCommand SortAssignCommand { get; }
         public RelayCommand ScheduleShiftCommand { get; }
         public RelayCommand RefreshCommand { get; }
@@ -146,6 +148,8 @@ namespace ezExam.App.ViewModels
             _shiftScheduler = shiftScheduler;
 
             ImportCommand = new RelayCommand(_ => ImportAsync());
+            DeleteAllCommand = new RelayCommand(_ => DeleteAllAsync(), _ => Candidates.Any());
+            ClearShiftCommand = new RelayCommand(_ => ClearShiftAsync(), _ => Candidates.Any());
             SortAssignCommand = new RelayCommand(_ => SortAndAssignAsync(),
                                       _ => Candidates.Any());
             ScheduleShiftCommand = new RelayCommand(_ => ScheduleShiftAsync(),
@@ -262,6 +266,61 @@ namespace ezExam.App.ViewModels
             catch (Exception ex)
             {
                 ShowStatus($"Lỗi: {ex.Message}", isError: true);
+            }
+            finally { IsBusy = false; }
+        }
+
+        private async Task DeleteAllAsync()
+        {
+            if (_currentSession == null) return;
+
+            var confirm = System.Windows.MessageBox.Show(
+                "Xóa hết danh sách thí sinh hiện tại?\nThao tác này dùng khi import mới lại.",
+                "Xác nhận",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Warning);
+
+            if (confirm != System.Windows.MessageBoxResult.Yes) return;
+
+            IsBusy = true;
+            try
+            {
+                await _candidateService.DeleteBySessionAsync(_currentSession.Id);
+                Candidates.Clear();
+                Statistics = null;
+                ShiftResult = null;
+                ShowStatus("Đã xóa hết danh sách thí sinh.", isError: false);
+            }
+            catch (Exception ex)
+            {
+                ShowStatus($"Lỗi xóa danh sách: {ex.Message}", isError: true);
+            }
+            finally { IsBusy = false; }
+        }
+
+        private async Task ClearShiftAsync()
+        {
+            if (_currentSession == null) return;
+
+            var confirm = System.Windows.MessageBox.Show(
+                "Xóa toàn bộ kết quả xếp ca (Ca 1/Ca 2) của thí sinh?",
+                "Xác nhận",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Question);
+
+            if (confirm != System.Windows.MessageBoxResult.Yes) return;
+
+            IsBusy = true;
+            try
+            {
+                await _candidateService.ClearShiftAssignmentsAsync(_currentSession.Id);
+                await LoadCandidatesAsync();
+                ShiftResult = null;
+                ShowStatus("Đã xóa xếp ca.", isError: false);
+            }
+            catch (Exception ex)
+            {
+                ShowStatus($"Lỗi xóa xếp ca: {ex.Message}", isError: true);
             }
             finally { IsBusy = false; }
         }

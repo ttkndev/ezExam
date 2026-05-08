@@ -37,6 +37,22 @@ namespace ezExam.App.Services
         public Task<CandidateStatistics> GetStatisticsAsync(int sessionId)
             => _statisticsService.GetStatisticsAsync(sessionId);
 
+        public Task DeleteBySessionAsync(int sessionId)
+            => _candidateRepo.DeleteBySessionAsync(sessionId);
+
+        public async Task ClearShiftAssignmentsAsync(int sessionId)
+        {
+            var candidates = await _candidateRepo.GetBySessionAsync(sessionId);
+            foreach (var candidate in candidates)
+            {
+                candidate.Shift1SubjectName = string.Empty;
+                candidate.Shift2SubjectName = string.Empty;
+                await _candidateRepo.UpdateAsync(candidate);
+            }
+
+            await _candidateRepo.SaveChangesAsync();
+        }
+
         /// <summary>
         /// Sắp xếp thí sinh theo tên (A-Z), nếu trùng tên thì xét họ đệm,
         /// sau đó đánh số báo danh liên tục bắt đầu từ số cho trước.

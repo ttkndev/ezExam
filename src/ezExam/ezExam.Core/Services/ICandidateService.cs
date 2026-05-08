@@ -25,5 +25,11 @@ namespace ezExam.Core.Services
 
         /// <summary>Lấy thống kê thí sinh sau khi import</summary>
         Task<CandidateStatistics> GetStatisticsAsync(int sessionId);
+
+        /// <summary>Xóa toàn bộ danh sách thí sinh của kỳ thi</summary>
+        Task DeleteBySessionAsync(int sessionId);
+
+        /// <summary>Xóa kết quả xếp ca (ca 1/ca 2) của toàn bộ thí sinh</summary>
+        Task ClearShiftAssignmentsAsync(int sessionId);
     }
 }
