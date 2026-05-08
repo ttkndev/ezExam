@@ -46,7 +46,6 @@ namespace ezExam.App.Services
 
             var candidates = await _candidateRepo.GetBySessionAsync(sessionId);
             var allRooms = new List<ExamRoom>();
-            int roomNumber = 1; // Số phòng thi tăng dần xuyên suốt
 
             // --- 1. Xếp phòng Ngữ văn ---
             var vanCandidates = candidates
@@ -58,7 +57,7 @@ namespace ezExam.App.Services
             allRooms.AddRange(AssignSequential(
                 vanCandidates, "Ngữ văn",
                 RoomType.Literature, sessionId,
-                capacity, ref roomNumber));
+                capacity));
 
             // --- 2. Xếp phòng Toán ---
             var toanCandidates = candidates
@@ -70,7 +69,7 @@ namespace ezExam.App.Services
             allRooms.AddRange(AssignSequential(
                 toanCandidates, "Toán",
                 RoomType.Math, sessionId,
-                capacity, ref roomNumber));
+                capacity));
 
             // --- 3. Xếp phòng Ca 1 ---
             var shift1Subjects = subjectShiftMap
@@ -81,7 +80,7 @@ namespace ezExam.App.Services
             var shift1Groups = BuildSubjectGroups(candidates, shift1Subjects);
             allRooms.AddRange(AssignBinPacking(
                 shift1Groups, RoomType.Shift1,
-                sessionId, capacity, ref roomNumber));
+                sessionId, capacity));
 
             // --- 4. Xếp phòng Ca 2 ---
             var shift2Subjects = subjectShiftMap
@@ -92,7 +91,7 @@ namespace ezExam.App.Services
             var shift2Groups = BuildSubjectGroups(candidates, shift2Subjects);
             allRooms.AddRange(AssignBinPacking(
                 shift2Groups, RoomType.Shift2,
-                sessionId, capacity, ref roomNumber));
+                sessionId, capacity));
 
             // Lưu tất cả phòng vào database
             await _roomRepo.AddRangeAsync(allRooms);
@@ -114,11 +113,11 @@ namespace ezExam.App.Services
             string subjectName,
             RoomType roomType,
             int sessionId,
-            int capacity,
-            ref int roomNumber)
+            int capacity)
         {
             var rooms = new List<ExamRoom>();
             int idx = 0;
+            int roomNumber = 1;
 
             while (idx < candidates.Count)
             {
@@ -193,10 +192,10 @@ namespace ezExam.App.Services
             Dictionary<string, List<Candidate>> subjectGroups,
             RoomType roomType,
             int sessionId,
-            int capacity,
-            ref int roomNumber)
+            int capacity)
         {
             var rooms = new List<ExamRoom>();
+            int roomNumber = 1;
 
             // Sắp xếp môn theo số HS giảm dần
             var sortedSubjects = subjectGroups
@@ -218,7 +217,7 @@ namespace ezExam.App.Services
                     idx += capacity;
 
                     rooms.Add(CreateRoom(batch, new[] { subject },
-                        roomType, sessionId, capacity, ref roomNumber));
+                        roomType, sessionId, ref roomNumber));
                 }
 
                 // Phần dư (< capacity) → vào pool
@@ -304,8 +303,7 @@ namespace ezExam.App.Services
             IEnumerable<string> subjects,
             RoomType roomType,
             int sessionId,
-            int capacity,
-            ref int roomNumber)
+            int capacity)
         {
             var subjectList = subjects.ToList();
             var room = new ExamRoom
