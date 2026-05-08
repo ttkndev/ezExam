@@ -8,6 +8,8 @@
             <!-- Toolbar -->
             <RowDefinition Height="Auto"/>
             <!-- Status bar -->
+            <RowDefinition Height="Auto"/>
+            <!-- Thống kê nhanh -->
             <RowDefinition Height="*"/>
             <!-- Nội dung tab -->
         </Grid.RowDefinitions>
@@ -41,6 +43,14 @@
                          Width="70" Padding="6 4" FontSize="13"
                          VerticalContentAlignment="Center"
                          Margin="0 0 8 0"/>
+
+                <TextBlock Text="Format SBD:" VerticalAlignment="Center" FontSize="13" Margin="0 0 6 0"/>
+                <TextBox Text="{Binding CandidateNumberFormat, UpdateSourceTrigger=PropertyChanged}"
+                         Width="110" Padding="6 4" FontSize="13"
+                         VerticalContentAlignment="Center"
+                         Margin="0 0 6 0"/>
+                <TextBlock Text="→" VerticalAlignment="Center" FontSize="13" Margin="0 0 4 0"/>
+                <TextBlock Text="{Binding PreviewStartCandidateNumber}" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0 0 10 0"/>
 
                 <Button Content="🔢 Sắp xếp &amp; Đánh SBD"
                         Command="{Binding SortAssignCommand}"
@@ -99,7 +109,21 @@
         </Border>
 
         <!-- ===== TABS ===== -->
-        <TabControl Grid.Row="2"
+        <!-- ===== THỐNG KÊ NHANH ===== -->
+        <Border Grid.Row="2" Margin="0 0 0 10" Padding="10" CornerRadius="4" Background="#F8F9FA"
+                BorderBrush="#DDE1E7" BorderThickness="1"
+                Visibility="{Binding HasStatistics, Converter={StaticResource BoolToVisibility}}">
+            <StackPanel>
+                <TextBlock Margin="0 0 0 6" FontSize="13">
+                    <Run Text="Tổng số thí sinh: "/>
+                    <Run Text="{Binding Statistics.TotalCandidates}" FontWeight="Bold"/>
+                </TextBlock>
+                <TextBlock Margin="0 0 0 6" FontSize="13" Text="{Binding SubjectStatisticsLine}" TextWrapping="Wrap"/>
+                <TextBlock FontSize="13" Text="{Binding SubjectPairStatisticsLine}" TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+
+        <TabControl Grid.Row="3"
                     SelectedIndex="{Binding SelectedTab}"
                     BorderThickness="1" BorderBrush="#DDE1E7">
 
@@ -143,68 +167,7 @@
 
             <!-- TAB 2: THỐNG KÊ -->
             <TabItem Header="📊 Thống kê">
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel Margin="16"
-                                Visibility="{Binding HasStatistics,
-                                             Converter={StaticResource BoolToVisibility}}">
-
-                        <!-- Tổng số thí sinh -->
-                        <Border Background="#EBF5FB" CornerRadius="6"
-                                Padding="16" Margin="0 0 0 16">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Tổng số thí sinh: "
-                                           FontSize="15" FontWeight="Bold"/>
-                                <TextBlock Text="{Binding Statistics.TotalCandidates}"
-                                           FontSize="15" FontWeight="Bold"
-                                           Foreground="#2980B9"/>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- Số thí sinh mỗi môn -->
-                        <TextBlock Text="Số thí sinh theo môn thi"
-                                   FontSize="14" FontWeight="Bold"
-                                   Margin="0 0 0 8"/>
-                        <DataGrid ItemsSource="{Binding Statistics.CandidatesBySubject}"
-                                  AutoGenerateColumns="False"
-                                  IsReadOnly="True"
-                                  HeadersVisibility="Column"
-                                  GridLinesVisibility="Horizontal"
-                                  RowHeight="32" FontSize="13"
-                                  Margin="0 0 0 16"
-                                  MaxHeight="200">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Môn thi"
-                                                    Binding="{Binding Key}"
-                                                    Width="*"/>
-                                <DataGridTextColumn Header="Số thí sinh"
-                                                    Binding="{Binding Value}"
-                                                    Width="120"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
-
-                        <!-- Số thí sinh theo cặp môn -->
-                        <TextBlock Text="Số thí sinh theo cặp môn tự chọn"
-                                   FontSize="14" FontWeight="Bold"
-                                   Margin="0 0 0 8"/>
-                        <DataGrid ItemsSource="{Binding Statistics.CandidatesBySubjectPair}"
-                                  AutoGenerateColumns="False"
-                                  IsReadOnly="True"
-                                  HeadersVisibility="Column"
-                                  GridLinesVisibility="Horizontal"
-                                  RowHeight="32" FontSize="13"
-                                  MaxHeight="200">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Cặp môn tự chọn"
-                                                    Binding="{Binding Key}"
-                                                    Width="*"/>
-                                <DataGridTextColumn Header="Số thí sinh"
-                                                    Binding="{Binding Value}"
-                                                    Width="120"/>
-                            </DataGrid.Columns>
-                        </DataGrid>
-
-                    </StackPanel>
-                </ScrollViewer>
+                <TextBlock Margin="16" Text="Đã chuyển phần thống kê nhanh lên trên tab Danh sách thí sinh để theo dõi trực tiếp."/>
             </TabItem>
 
         </TabControl>

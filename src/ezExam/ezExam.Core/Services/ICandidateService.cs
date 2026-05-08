@@ -21,7 +21,7 @@ namespace ezExam.Core.Services
         /// </summary>
         /// <param name="sessionId">Id kỳ thi</param>
         /// <param name="startNumber">Số SBD bắt đầu, mặc định là 1</param>
-        Task SortAndAssignNumbersAsync(int sessionId, int startNumber = 1);
+        Task SortAndAssignNumbersAsync(int sessionId, int startNumber = 1, string? numberFormat = null);
 
         /// <summary>Lấy thống kê thí sinh sau khi import</summary>
         Task<CandidateStatistics> GetStatisticsAsync(int sessionId);

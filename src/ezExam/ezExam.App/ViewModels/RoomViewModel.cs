@@ -5,6 +5,7 @@ using ezExam.Data.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text;
 
 namespace ezExam.App.ViewModels
@@ -67,7 +68,7 @@ namespace ezExam.App.ViewModels
 
         public string SelectedRoomTitle => _selectedRoom == null
             ? "Chọn phòng để xem danh sách"
-            : $"{_selectedRoom.RoomName} — {_selectedRoom.SubjectNames} ({_selectedRoom.Assignments.Count} TS)";
+            : $"{_selectedRoom.RoomName} — {_selectedRoom.SubjectNames} ({_selectedRoom.Assignments?.Count ?? 0} TS)";
 
         // --- Danh sách TS trong phòng đang chọn ---
         public ObservableCollection<RoomAssignment> RoomCandidates { get; } = new();
@@ -245,7 +246,7 @@ namespace ezExam.App.ViewModels
             RoomCandidates.Clear();
             if (room == null) return;
 
-            var sorted = room.Assignments
+            var sorted = (room.Assignments ?? new List<RoomAssignment>())
                 .OrderBy(a => a.OrderInRoom)
                 .ToList();
 
@@ -281,7 +282,7 @@ namespace ezExam.App.ViewModels
         /// <summary>Tạo chuỗi tóm tắt: "5 phòng / 118 thí sinh"</summary>
         private static string BuildSummary(ObservableCollection<ExamRoom> rooms)
         {
-            int totalTS = rooms.Sum(r => r.Assignments.Count);
+            int totalTS = rooms.Sum(r => r.Assignments?.Count ?? 0);
             return $"{rooms.Count} phòng / {totalTS} thí sinh";
         }
 
