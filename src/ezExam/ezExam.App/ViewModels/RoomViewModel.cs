@@ -170,10 +170,18 @@ namespace ezExam.App.ViewModels
                 int total = LiteratureRooms.Count + MathRooms.Count
                           + Shift1Rooms.Count + Shift2Rooms.Count;
 
-                ShowStatus(total > 0
-                    ? $"Đã tải {total} phòng thi."
-                    : "Chưa có phòng thi. Nhấn 'Xếp phòng thi' để tạo.",
-                    isError: false);
+                if (total == 0)
+                {
+                    ShowStatus("Chưa có phòng thi. Nhấn 'Xếp phòng thi' để tạo.", isError: false);
+                }
+                else if (Shift1Rooms.Count == 0 && Shift2Rooms.Count == 0)
+                {
+                    ShowStatus("Chưa xếp phòng thi cho môn Ca 1 và Ca 2.", isError: false);
+                }
+                else
+                {
+                    ShowStatus($"Đã tải {total} phòng thi.", isError: false);
+                }
             }
             catch (Exception ex)
             {
