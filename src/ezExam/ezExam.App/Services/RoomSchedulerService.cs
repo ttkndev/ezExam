@@ -46,7 +46,6 @@ namespace ezExam.App.Services
 
             var candidates = await _candidateRepo.GetBySessionAsync(sessionId);
             var allRooms = new List<ExamRoom>();
-            int nextRoomNumber = 1;
 
             // --- 1. Xếp phòng Ngữ văn ---
             var vanCandidates = candidates
@@ -55,10 +54,11 @@ namespace ezExam.App.Services
                 .OrderBy(c => c.CandidateNumber)
                 .ToList();
 
+            int literatureRoomNumber = 1;
             allRooms.AddRange(AssignSequential(
                 vanCandidates, "Ngữ văn",
                 RoomType.Literature, sessionId,
-                capacity, ref nextRoomNumber));
+                capacity, ref literatureRoomNumber));
 
             // --- 2. Xếp phòng Toán ---
             var toanCandidates = candidates
@@ -67,10 +67,11 @@ namespace ezExam.App.Services
                 .OrderBy(c => c.CandidateNumber)
                 .ToList();
 
+            int mathRoomNumber = 1;
             allRooms.AddRange(AssignSequential(
                 toanCandidates, "Toán",
                 RoomType.Math, sessionId,
-                capacity, ref nextRoomNumber));
+                capacity, ref mathRoomNumber));
 
             // --- 3. Xếp phòng Ca 1 ---
             var shift1Subjects = subjectShiftMap
@@ -79,9 +80,10 @@ namespace ezExam.App.Services
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
             var shift1Groups = BuildSubjectGroups(candidates, shift1Subjects);
+            int shift1RoomNumber = 1;
             allRooms.AddRange(AssignBinPacking(
                 shift1Groups, RoomType.Shift1,
-                sessionId, capacity, ref nextRoomNumber));
+                sessionId, capacity, ref shift1RoomNumber));
 
             // --- 4. Xếp phòng Ca 2 ---
             var shift2Subjects = subjectShiftMap
@@ -90,9 +92,10 @@ namespace ezExam.App.Services
                 .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
             var shift2Groups = BuildSubjectGroups(candidates, shift2Subjects);
+            int shift2RoomNumber = 1;
             allRooms.AddRange(AssignBinPacking(
                 shift2Groups, RoomType.Shift2,
-                sessionId, capacity, ref nextRoomNumber));
+                sessionId, capacity, ref shift2RoomNumber));
 
             // Lưu tất cả phòng vào database
             await _roomRepo.AddRangeAsync(allRooms);
