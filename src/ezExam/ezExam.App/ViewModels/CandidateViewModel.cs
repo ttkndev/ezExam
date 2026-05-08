@@ -5,6 +5,7 @@ using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text;
 
 namespace ezExam.App.ViewModels
@@ -36,9 +37,19 @@ namespace ezExam.App.ViewModels
             {
                 SetProperty(ref _statistics, value);
                 OnPropertyChanged(nameof(HasStatistics));
+                OnPropertyChanged(nameof(SubjectStatisticsLine));
+                OnPropertyChanged(nameof(SubjectPairStatisticsLine));
             }
         }
         public bool HasStatistics => _statistics != null;
+
+        public string SubjectStatisticsLine => Statistics == null
+            ? ""
+            : $"Số lượng đăng ký môn: {string.Join(" | ", Statistics.CandidatesBySubject.Select(kv => $"{kv.Key}: {kv.Value}"))}";
+
+        public string SubjectPairStatisticsLine => Statistics == null
+            ? ""
+            : $"Số lượng đăng ký cặp môn tự chọn: {string.Join(" | ", Statistics.CandidatesBySubjectPair.Select(kv => $"({kv.Key}): {kv.Value}"))}";
 
         // --- Kết quả xếp ca ---
         private ShiftScheduleResult? _shiftResult;
@@ -88,8 +99,26 @@ namespace ezExam.App.ViewModels
         public int StartNumber
         {
             get => _startNumber;
-            set => SetProperty(ref _startNumber, value);
+            set
+            {
+                if (SetProperty(ref _startNumber, value))
+                    OnPropertyChanged(nameof(PreviewStartCandidateNumber));
+            }
         }
+
+        // --- Format SBD (ví dụ: TBA{d:3} => TBA001) ---
+        private string _candidateNumberFormat = "TBA{d:3}";
+        public string CandidateNumberFormat
+        {
+            get => _candidateNumberFormat;
+            set
+            {
+                if (SetProperty(ref _candidateNumberFormat, value))
+                    OnPropertyChanged(nameof(PreviewStartCandidateNumber));
+            }
+        }
+
+        public string PreviewStartCandidateNumber => FormatCandidateNumber(StartNumber, CandidateNumberFormat);
 
         // --- Commands ---
         public RelayCommand ImportCommand { get; }
@@ -213,7 +242,7 @@ namespace ezExam.App.ViewModels
             try
             {
                 await _candidateService.SortAndAssignNumbersAsync(
-                    _currentSession.Id, StartNumber);
+                    _currentSession.Id, StartNumber, CandidateNumberFormat);
 
                 await LoadCandidatesAsync();
                 ShowStatus("Đã sắp xếp và đánh SBD thành công!", isError: false);
@@ -253,6 +282,40 @@ namespace ezExam.App.ViewModels
                 ShowStatus($"Lỗi xếp ca: {ex.Message}", isError: true);
             }
             finally { IsBusy = false; }
+        }
+
+        private static string FormatCandidateNumber(int number, string? format)
+        {
+            if (string.IsNullOrWhiteSpace(format))
+                return number.ToString();
+
+            try
+            {
+                var parsed = ParseNumberFormat(format);
+                return $"{parsed.Prefix}{number.ToString($"D{parsed.Digits}")}";
+            }
+            catch
+            {
+                return number.ToString();
+            }
+        }
+
+        private static (string Prefix, int Digits) ParseNumberFormat(string format)
+        {
+            var open = format.IndexOf("{d:", StringComparison.OrdinalIgnoreCase);
+            if (open < 0)
+                throw new FormatException("Thiếu phần định dạng {d:n}.");
+
+            var close = format.IndexOf('}', open);
+            if (close < 0)
+                throw new FormatException("Thiếu dấu } trong định dạng SBD.");
+
+            var digitsText = format.Substring(open + 3, close - open - 3);
+            if (!int.TryParse(digitsText, out var digits) || digits <= 0)
+                throw new FormatException("Số chữ số trong định dạng SBD không hợp lệ.");
+
+            var prefix = format.Substring(0, open);
+            return (prefix, digits);
         }
 
         private void ShowStatus(string msg, bool isError)

@@ -41,7 +41,7 @@ namespace ezExam.App.Services
         /// Sắp xếp thí sinh theo tên (A-Z), nếu trùng tên thì xét họ đệm,
         /// sau đó đánh số báo danh liên tục bắt đầu từ số cho trước.
         /// </summary>
-        public async Task SortAndAssignNumbersAsync(int sessionId, int startNumber = 1)
+        public async Task SortAndAssignNumbersAsync(int sessionId, int startNumber = 1, string? numberFormat = null)
         {
             var candidates = await _candidateRepo.GetBySessionAsync(sessionId);
 
@@ -54,11 +54,33 @@ namespace ezExam.App.Services
             // Đánh SBD liên tục, format 6 chữ số: 000001, 000002, ...
             for (int i = 0; i < sorted.Count; i++)
             {
-                sorted[i].CandidateNumber = (startNumber + i).ToString("D6");
+                sorted[i].CandidateNumber = FormatCandidateNumber(startNumber + i, numberFormat);
                 await _candidateRepo.UpdateAsync(sorted[i]);
             }
 
             await _candidateRepo.SaveChangesAsync();
+        }
+
+
+        private static string FormatCandidateNumber(int number, string? numberFormat)
+        {
+            if (string.IsNullOrWhiteSpace(numberFormat))
+                return number.ToString("D6");
+
+            var open = numberFormat.IndexOf("{d:", StringComparison.OrdinalIgnoreCase);
+            if (open < 0)
+                return number.ToString("D6");
+
+            var close = numberFormat.IndexOf('}', open);
+            if (close < 0)
+                return number.ToString("D6");
+
+            var digitsText = numberFormat.Substring(open + 3, close - open - 3);
+            if (!int.TryParse(digitsText, out var digits) || digits <= 0)
+                return number.ToString("D6");
+
+            var prefix = numberFormat.Substring(0, open);
+            return $"{prefix}{number.ToString($"D{digits}")}";
         }
 
         /// <summary>
