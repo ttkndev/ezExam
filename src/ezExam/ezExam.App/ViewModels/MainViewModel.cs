@@ -91,7 +91,10 @@ namespace ezExam.App.ViewModels
 
         private async Task LoadDefaultSessionAsync()
         {
-            CurrentSession = await _sessionService.GetDefaultAsync();
+            var defaultSession = await _sessionService.GetDefaultAsync();
+            CurrentSession = defaultSession;
+            _candidateVM.SetSession(defaultSession);
+            _roomVM.SetSession(defaultSession);
         }
 
         private void OnSessionChanged(ExamSession? session)

@@ -67,6 +67,12 @@ namespace ezExam.App.Services
             // (mỗi môn có thể ở cả 2 ca nên map theo HS)
             var shiftMap = BuildShiftMapPerCandidate(candidates, assignment);
 
+            // Ghi trực tiếp kết quả môn ca 1/ca 2 vào từng thí sinh
+            ApplyShiftSubjectsToCandidates(candidates, shiftMap);
+            foreach (var candidate in candidates)
+                await _repo.UpdateAsync(candidate);
+            await _repo.SaveChangesAsync();
+
             return new ShiftScheduleResult
             {
                 SubjectShiftMap = shiftMap,
@@ -281,6 +287,32 @@ namespace ezExam.App.Services
             }
 
             return map;
+        }
+
+
+        /// <summary>Gán môn ca 1/ca 2 trực tiếp vào thí sinh để hiển thị nhanh trên UI</summary>
+        private static void ApplyShiftSubjectsToCandidates(
+            List<Candidate> candidates,
+            Dictionary<string, int> shiftMap)
+        {
+            foreach (var candidate in candidates)
+            {
+                candidate.Shift1SubjectName = string.Empty;
+                candidate.Shift2SubjectName = string.Empty;
+
+                var optionalSubjects = candidate.GetSubjectList()
+                    .Where(s => !RequiredSubjects.Contains(s))
+                    .ToList();
+
+                foreach (var subject in optionalSubjects)
+                {
+                    var key = $"{candidate.Id}_{subject}";
+                    if (!shiftMap.TryGetValue(key, out var shift)) continue;
+
+                    if (shift == 1) candidate.Shift1SubjectName = subject;
+                    else if (shift == 2) candidate.Shift2SubjectName = subject;
+                }
+            }
         }
 
         // =========================================================================
