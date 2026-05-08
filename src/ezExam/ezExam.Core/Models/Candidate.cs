@@ -21,6 +21,12 @@ namespace ezExam.Core.Models
         /// <summary>Danh sách tên môn thi (lưu dạng chuỗi phân cách bởi dấu phẩy)</summary>
         public string SubjectNames { get; set; } = string.Empty;
 
+        /// <summary>Môn được xếp vào ca 1</summary>
+        public string Shift1SubjectName { get; set; } = string.Empty;
+
+        /// <summary>Môn được xếp vào ca 2</summary>
+        public string Shift2SubjectName { get; set; } = string.Empty;
+
         /// <summary>Kỳ thi mà thí sinh này thuộc về</summary>
         public int ExamSessionId { get; set; }
         public ExamSession? ExamSession { get; set; }

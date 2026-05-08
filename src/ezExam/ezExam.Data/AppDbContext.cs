@@ -37,6 +37,8 @@ namespace ezExam.Data
                 e.HasKey(x => x.Id);
                 e.Property(x => x.FullName).IsRequired().HasMaxLength(200);
                 e.Property(x => x.SubjectNames).HasMaxLength(500);
+                e.Property(x => x.Shift1SubjectName).HasMaxLength(100);
+                e.Property(x => x.Shift2SubjectName).HasMaxLength(100);
                 e.HasIndex(x => new { x.ExamSessionId, x.CandidateNumber });
             });
 

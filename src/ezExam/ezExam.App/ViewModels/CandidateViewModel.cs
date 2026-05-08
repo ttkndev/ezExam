@@ -49,23 +49,11 @@ namespace ezExam.App.ViewModels
             {
                 SetProperty(ref _shiftResult, value);
                 OnPropertyChanged(nameof(HasShiftResult));
-                OnPropertyChanged(nameof(ShiftResultItems));
             }
         }
         public bool HasShiftResult => _shiftResult != null;
 
-        /// <summary>Chuyển ShiftMap thành list để binding vào DataGrid</summary>
-        public List<ShiftResultItem> ShiftResultItems =>
-            _shiftResult?.SubjectShiftMap
-                .Select(kv => new ShiftResultItem
-                {
-                    SubjectName = kv.Key,
-                    Shift = kv.Value,
-                    ShiftText = kv.Value == 1 ? "Ca 1" : "Ca 2"
-                }).OrderBy(x => x.Shift).ThenBy(x => x.SubjectName)
-                .ToList() ?? new();
-
-        // --- Tab đang hiển thị: 0=Danh sách, 1=Thống kê, 2=Xếp ca ---
+        // --- Tab đang hiển thị: 0=Danh sách, 1=Thống kê ---
         private int _selectedTab;
         public int SelectedTab
         {
@@ -256,8 +244,9 @@ namespace ezExam.App.ViewModels
 
                 ShowStatus(msg, isError: !ShiftResult.IsPerfect);
 
-                // Chuyển sang tab xếp ca
-                SelectedTab = 2;
+                // Ở lại tab danh sách để xem kết quả trực tiếp trên cột Môn ca 1/2
+                SelectedTab = 0;
+                await LoadCandidatesAsync();
             }
             catch (Exception ex)
             {
@@ -273,11 +262,4 @@ namespace ezExam.App.ViewModels
         }
     }
 
-    /// <summary>Item hiển thị kết quả xếp ca trong DataGrid</summary>
-    public class ShiftResultItem
-    {
-        public string SubjectName { get; set; } = "";
-        public int Shift { get; set; }
-        public string ShiftText { get; set; } = "";
-    }
 }
