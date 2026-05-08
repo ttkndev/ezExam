@@ -1,3 +1,5 @@
 <Solution>
-  <Project Path="Desktop/Desktop.csproj" />
+  <Project Path="ezExam.App/ezExam.App.csproj" Id="f71e3559-16e0-444f-b58c-9695e64043fb" />
+  <Project Path="ezExam.Core/ezExam.Core.csproj" Id="38f22da6-f6db-4bc1-b479-bc47fdb031d5" />
+  <Project Path="ezExam.Data/ezExam.Data.csproj" Id="5b06003e-38c5-46ab-8437-05b89d68c82c" />
 </Solution>

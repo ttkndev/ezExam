@@ -1,0 +1,163 @@
+﻿<UserControl x:Class="ezExam.App.Views.ExamSessionView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Margin="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <!-- Danh sách -->
+            <ColumnDefinition Width="20"/>
+            <!-- Khoảng cách -->
+            <ColumnDefinition Width="340"/>
+            <!-- Form -->
+        </Grid.ColumnDefinitions>
+
+        <!-- ===== CỘT TRÁI: DANH SÁCH KỲ THI ===== -->
+        <DockPanel Grid.Column="0">
+
+            <!-- Tiêu đề + nút Thêm mới -->
+            <DockPanel DockPanel.Dock="Top" Margin="0 0 0 10">
+                <TextBlock Text="Danh sách kỳ thi"
+                           FontSize="16" FontWeight="Bold"
+                           VerticalAlignment="Center"/>
+                <Button Content="+ Thêm mới"
+                        Command="{Binding NewCommand}"
+                        Style="{StaticResource PrimaryButton}"
+                        HorizontalAlignment="Right"/>
+            </DockPanel>
+
+            <!-- DataGrid danh sách -->
+            <DataGrid ItemsSource="{Binding Sessions}"
+                      SelectedItem="{Binding SelectedSession}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      SelectionMode="Single"
+                      GridLinesVisibility="Horizontal"
+                      HeadersVisibility="Column"
+                      RowHeight="36"
+                      FontSize="13"
+                      BorderThickness="1"
+                      BorderBrush="#DDE1E7">
+
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Tên kỳ thi"
+                                        Binding="{Binding Name}"
+                                        Width="*"/>
+                    <DataGridTextColumn Header="Ngày thi"
+                                        Binding="{Binding ExamDate, StringFormat=dd/MM/yyyy}"
+                                        Width="110"/>
+                    <DataGridTemplateColumn Header="Mặc định" Width="90">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding IsDefault,
+                                           Converter={StaticResource BoolToText},
+                                           ConverterParameter='✅|'}"
+                                           HorizontalAlignment="Center"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+
+                <!-- Highlight dòng mặc định -->
+                <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsDefault}" Value="True">
+                                <Setter Property="Background" Value="#EBF5FB"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.RowStyle>
+            </DataGrid>
+        </DockPanel>
+
+        <!-- ===== CỘT PHẢI: FORM NHẬP LIỆU ===== -->
+        <Border Grid.Column="2"
+                BorderBrush="#DDE1E7" BorderThickness="1"
+                CornerRadius="6" Padding="20"
+                VerticalAlignment="Top">
+            <StackPanel>
+
+                <!-- Tiêu đề form -->
+                <TextBlock Text="{Binding FormTitle}"
+                           FontSize="15" FontWeight="Bold"
+                           Margin="0 0 0 16"/>
+
+                <!-- Tên kỳ thi -->
+                <TextBlock Text="Tên kỳ thi *" FontSize="13" Margin="0 0 0 4"/>
+                <TextBox Text="{Binding FormName, UpdateSourceTrigger=PropertyChanged}"
+                         FontSize="13" Padding="8 6"
+                         BorderBrush="#DDE1E7" BorderThickness="1"
+                         Margin="0 0 0 12"/>
+
+                <!-- Ngày thi -->
+                <TextBlock Text="Ngày thi" FontSize="13" Margin="0 0 0 4"/>
+                <DatePicker SelectedDate="{Binding FormDate}"
+                            FontSize="13" Margin="0 0 0 20"/>
+
+                <!-- Buttons -->
+                <WrapPanel>
+                    <Button Content="💾 Lưu"
+                            Command="{Binding SaveCommand}"
+                            Style="{StaticResource PrimaryButton}"
+                            Margin="0 0 8 0"/>
+                    <Button Content="Hủy"
+                            Command="{Binding CancelCommand}"
+                            Padding="16 8" FontSize="13"
+                            Margin="0 0 8 0"/>
+                </WrapPanel>
+
+                <!-- Divider -->
+                <Separator Margin="0 16"/>
+
+                <!-- Thao tác với kỳ thi đang chọn -->
+                <TextBlock Text="Thao tác" FontSize="13" FontWeight="Bold"
+                           Margin="0 0 0 10"/>
+
+                <Button Content="⭐ Đặt làm kỳ thi đang thao tác"
+                        Command="{Binding SetDefaultCommand}"
+                        Style="{StaticResource PrimaryButton}"
+                        HorizontalAlignment="Stretch"
+                        Margin="0 0 0 8"/>
+
+                <Button Content="🗑 Xóa kỳ thi này"
+                        Command="{Binding DeleteCommand}"
+                        Style="{StaticResource DangerButton}"
+                        HorizontalAlignment="Stretch"/>
+
+                <!-- Thông báo -->
+                <Border Margin="0 16 0 0"
+                        Padding="10 8"
+                        CornerRadius="4"
+                        Visibility="{Binding Message,
+                                     Converter={StaticResource StringToVisibility}}">
+                    <Border.Style>
+                        <Style TargetType="Border">
+                            <Setter Property="Background" Value="#EAFAF1"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsError}" Value="True">
+                                    <Setter Property="Background" Value="#FDEDEC"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Border.Style>
+                    <TextBlock Text="{Binding Message}"
+                               FontSize="13" TextWrapping="Wrap">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Foreground" Value="#1E8449"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsError}" Value="True">
+                                        <Setter Property="Foreground" Value="#C0392B"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Border>
+
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

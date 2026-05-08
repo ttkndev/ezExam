@@ -1,0 +1,168 @@
+﻿<UserControl x:Class="ezExam.App.Views.RoomView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <!-- Toolbar -->
+            <RowDefinition Height="Auto"/>
+            <!-- Status -->
+            <RowDefinition Height="*"/>
+            <!-- Tabs -->
+        </Grid.RowDefinitions>
+
+        <!-- ===== TOOLBAR ===== -->
+        <Border Grid.Row="0"
+                Background="#F8F9FA"
+                BorderBrush="#DDE1E7" BorderThickness="1"
+                CornerRadius="6" Padding="12 8"
+                Margin="0 0 0 10">
+            <WrapPanel>
+
+                <!-- Sức chứa -->
+                <TextBlock Text="Sức chứa phòng:"
+                           VerticalAlignment="Center"
+                           FontSize="13" Margin="0 0 6 0"/>
+                <TextBox Text="{Binding RoomCapacity,
+                                UpdateSourceTrigger=PropertyChanged}"
+                         Width="50" Padding="6 4" FontSize="13"
+                         VerticalContentAlignment="Center"
+                         Margin="0 0 16 0"/>
+
+                <Button Content="🏫 Xếp phòng thi"
+                        Command="{Binding ScheduleRoomsCommand}"
+                        Style="{StaticResource PrimaryButton}"
+                        Margin="0 0 8 0"/>
+
+                <Button Content="🔁 Xếp lại ca + phòng"
+                        Command="{Binding ReScheduleShiftCommand}"
+                        Padding="12 8" FontSize="13"
+                        Margin="0 0 8 0"/>
+
+                <Button Content="🔄 Tải lại"
+                        Command="{Binding RefreshCommand}"
+                        Padding="12 8" FontSize="13"
+                        Margin="0 0 16 0"/>
+
+                <!-- Loading -->
+                <StackPanel Orientation="Horizontal"
+                            Visibility="{Binding IsBusy,
+                                         Converter={StaticResource BoolToVisibility}}"
+                            VerticalAlignment="Center">
+                    <ProgressBar IsIndeterminate="True"
+                                 Width="80" Height="6" Margin="0 0 6 0"/>
+                    <TextBlock Text="Đang xử lý..."
+                               FontSize="12" Foreground="#7F8C8D"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
+
+            </WrapPanel>
+        </Border>
+
+        <!-- ===== STATUS ===== -->
+        <Border Grid.Row="1"
+                Padding="10 6" CornerRadius="4"
+                Margin="0 0 0 10"
+                Visibility="{Binding StatusMessage,
+                             Converter={StaticResource StringToVisibility}}">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Background" Value="#EAFAF1"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsStatusError}" Value="True">
+                            <Setter Property="Background" Value="#FDEDEC"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <TextBlock Text="{Binding StatusMessage}" FontSize="13">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="#1E8449"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsStatusError}" Value="True">
+                                <Setter Property="Foreground" Value="#C0392B"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </Border>
+
+        <!-- ===== TABS 4 LOẠI PHÒNG ===== -->
+        <TabControl Grid.Row="2"
+                    SelectedIndex="{Binding SelectedTab}"
+                    BorderThickness="1" BorderBrush="#DDE1E7">
+
+            <!-- TAB VĂN -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="📖 Ngữ văn"/>
+                        <Border Background="#E8DAEF" CornerRadius="8"
+                                Padding="6 1" Margin="6 0 0 0">
+                            <TextBlock Text="{Binding LiteratureSummary}"
+                                       FontSize="11" Foreground="#6C3483"/>
+                        </Border>
+                    </StackPanel>
+                </TabItem.Header>
+                <ContentControl Content="{Binding}"
+                                ContentTemplate="{StaticResource RoomTabTemplate}"
+                                Tag="{Binding LiteratureRooms}"/>
+            </TabItem>
+
+            <!-- TAB TOÁN -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="📐 Toán"/>
+                        <Border Background="#D5F5E3" CornerRadius="8"
+                                Padding="6 1" Margin="6 0 0 0">
+                            <TextBlock Text="{Binding MathSummary}"
+                                       FontSize="11" Foreground="#1E8449"/>
+                        </Border>
+                    </StackPanel>
+                </TabItem.Header>
+                <ContentControl Content="{Binding}"
+                                ContentTemplate="{StaticResource RoomTabTemplate}"
+                                Tag="{Binding MathRooms}"/>
+            </TabItem>
+
+            <!-- TAB CA 1 -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🌅 Ca 1"/>
+                        <Border Background="#FEF9E7" CornerRadius="8"
+                                Padding="6 1" Margin="6 0 0 0">
+                            <TextBlock Text="{Binding Shift1Summary}"
+                                       FontSize="11" Foreground="#B7770D"/>
+                        </Border>
+                    </StackPanel>
+                </TabItem.Header>
+                <ContentControl Content="{Binding}"
+                                ContentTemplate="{StaticResource RoomTabTemplate}"
+                                Tag="{Binding Shift1Rooms}"/>
+            </TabItem>
+
+            <!-- TAB CA 2 -->
+            <TabItem>
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🌇 Ca 2"/>
+                        <Border Background="#EBF5FB" CornerRadius="8"
+                                Padding="6 1" Margin="6 0 0 0">
+                            <TextBlock Text="{Binding Shift2Summary}"
+                                       FontSize="11" Foreground="#2471A3"/>
+                        </Border>
+                    </StackPanel>
+                </TabItem.Header>
+                <ContentControl Content="{Binding}"
+                                ContentTemplate="{StaticResource RoomTabTemplate}"
+                                Tag="{Binding Shift2Rooms}"/>
+            </TabItem>
+
+        </TabControl>
+    </Grid>
+</UserControl>
